@@ -1,0 +1,217 @@
+import { DurableObject } from "cloudflare:workers";
+
+// One test run at a time: clone ronaldbradford/vsql inside the container,
+// run scripts/run-and-pr.sh as the non-root "runner" user, and poll with a
+// Durable Object alarm until it finishes. The script itself opens the PR.
+
+const WORK = "/workspace";
+const CHECKOUT = `${WORK}/vsql`;
+const JOB_LOG = `${WORK}/job.log`;
+const JOB_EXIT = `${WORK}/job.exit`;
+const POLL_MS = 60_000;
+const MAX_RUN_MS = 60 * 60_000;
+
+type RunRequest = { sqlFile?: string; codebases?: string[]; source?: string };
+
+type RunState = {
+	status: "idle" | "running" | "finished" | "timed-out" | "error";
+	startedAt?: string;
+	finishedAt?: string;
+	exitCode?: number;
+	request?: RunRequest;
+	logTail?: string;
+	error?: string;
+};
+
+const CODEBASES = new Set(["mysql-8.4", "percona-8.4", "mysql-9.7"]);
+const SAFE_PATH = /^[A-Za-z0-9._/-]+$/;
+
+function shellQuote(s: string): string {
+	return `'${s.replace(/'/g, `'\\''`)}'`;
+}
+
+export class VsqlRunner extends DurableObject<Env> {
+	private get container() {
+		const c = this.ctx.container;
+		if (!c) throw new Error("The container binding is not configured");
+		return c;
+	}
+
+	private async ensureStarted() {
+		if (!this.container.running) {
+			this.container.start({
+				image: this.container.images.vsql,
+				instance: "standard-1",
+				// Needs github.com, api.github.com, install.villagesql.com and the
+				// release download hosts.
+				enableInternet: true,
+			});
+		}
+		// Keep the container alive while the detached job runs.
+		await this.container.setInactivityTimeout(MAX_RUN_MS + 10 * 60_000);
+	}
+
+	private baseEnv(): Record<string, string> {
+		return {
+			PATH: "/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin",
+			HOME: "/home/runner",
+			LANG: "C.UTF-8",
+			GH_TOKEN: this.env.GITHUB_TOKEN,
+		};
+	}
+
+	// Run a shell command as the unprivileged "runner" user.
+	private async sh(script: string, env: Record<string, string> = {}) {
+		const process = await this.container.exec(["bash", "-c", script], {
+			cwd: WORK,
+			user: "runner",
+			env: { ...this.baseEnv(), ...env },
+		});
+		const output = await process.output();
+		const decode = (b: ArrayBuffer) => new TextDecoder().decode(b);
+		return {
+			exitCode: output.exitCode,
+			stdout: decode(output.stdout),
+			stderr: decode(output.stderr),
+		};
+	}
+
+	async status(): Promise<RunState> {
+		return (await this.ctx.storage.get<RunState>("state")) ?? { status: "idle" };
+	}
+
+	async start(req: RunRequest): Promise<RunState> {
+		const current = await this.status();
+		if (current.status === "running") return current;
+
+		const sqlFile = req.sqlFile ?? this.env.DEFAULT_SQL_FILE;
+		const codebases = req.codebases ?? this.env.DEFAULT_CODEBASES.split(/\s+/).filter(Boolean);
+		if (!SAFE_PATH.test(sqlFile) || sqlFile.includes("..")) {
+			throw new Error(`Invalid sqlFile: ${sqlFile}`);
+		}
+		for (const cb of codebases) {
+			if (!CODEBASES.has(cb)) throw new Error(`Unknown codebase: ${cb}`);
+		}
+		const request: RunRequest = { sqlFile, codebases, source: req.source ?? "manual" };
+
+		try {
+			await this.ensureStarted();
+
+			const clone = await this.sh(
+				`rm -rf ${CHECKOUT} ${JOB_LOG} ${JOB_EXIT} && ` +
+					`gh repo clone ${shellQuote(this.env.REPO)} ${CHECKOUT} -- --quiet && ` +
+					`test -f ${CHECKOUT}/${sqlFile}`,
+			);
+			if (clone.exitCode !== 0) {
+				throw new Error(`Clone failed: ${clone.stderr || clone.stdout}`);
+			}
+
+			// Launch detached so this call returns; the alarm polls for completion.
+			const args = [sqlFile, ...codebases].map(shellQuote).join(" ");
+			const launch = await this.sh(
+				`cd ${CHECKOUT} && setsid nohup bash -c ` +
+					shellQuote(`./scripts/run-and-pr.sh ${args} > ${JOB_LOG} 2>&1; echo $? > ${JOB_EXIT}`) +
+					` > /dev/null 2>&1 &`,
+				{
+					BASE_BRANCH: this.env.BASE_BRANCH,
+					AUTO_MERGE: this.env.AUTO_MERGE,
+					RUN_SOURCE: `cloudflare ${request.source}`,
+				},
+			);
+			if (launch.exitCode !== 0) {
+				throw new Error(`Launch failed: ${launch.stderr || launch.stdout}`);
+			}
+		} catch (e) {
+			const state: RunState = {
+				status: "error",
+				request,
+				finishedAt: new Date().toISOString(),
+				error: e instanceof Error ? e.message : String(e),
+			};
+			await this.ctx.storage.put("state", state);
+			return state;
+		}
+
+		const state: RunState = { status: "running", startedAt: new Date().toISOString(), request };
+		await this.ctx.storage.put("state", state);
+		await this.ctx.storage.setAlarm(Date.now() + POLL_MS);
+		return state;
+	}
+
+	async alarm(): Promise<void> {
+		const state = await this.status();
+		if (state.status !== "running") return;
+
+		// The container stops if it goes idle; this poll also keeps it active.
+		if (!this.container.running) {
+			await this.finish(state, "error", undefined, "Container stopped before the run finished");
+			return;
+		}
+
+		const check = await this.sh(`cat ${JOB_EXIT} 2>/dev/null; echo; tail -c 4000 ${JOB_LOG} 2>/dev/null`);
+		const [first, ...rest] = check.stdout.split("\n");
+		const tail = rest.join("\n");
+
+		if (first.trim() !== "") {
+			await this.finish(state, "finished", Number(first.trim()), undefined, tail);
+			return;
+		}
+		if (Date.now() - Date.parse(state.startedAt ?? "") > MAX_RUN_MS) {
+			await this.finish(state, "timed-out", undefined, "Run exceeded the time limit", tail);
+			return;
+		}
+		await this.ctx.storage.put("state", { ...state, logTail: tail });
+		await this.ctx.storage.setAlarm(Date.now() + POLL_MS);
+	}
+
+	private async finish(
+		state: RunState,
+		status: RunState["status"],
+		exitCode?: number,
+		error?: string,
+		logTail?: string,
+	) {
+		await this.ctx.storage.put("state", {
+			...state,
+			status,
+			exitCode,
+			error,
+			logTail: logTail ?? state.logTail,
+			finishedAt: new Date().toISOString(),
+		});
+		// A fresh container for every run keeps results independent.
+		await this.container.destroy().catch(() => {});
+	}
+}
+
+function runner(env: Env) {
+	// cf types a same-Worker binding by name only, so supply the class type here.
+	const ns = env.VSQL_RUNNER as unknown as DurableObjectNamespace<VsqlRunner>;
+	return ns.getByName("vsql-test-runner");
+}
+
+export default {
+	async fetch(request: Request, env: Env): Promise<Response> {
+		const url = new URL(request.url);
+		if (request.headers.get("authorization") !== `Bearer ${env.RUN_KEY}`) {
+			return new Response("Unauthorized", { status: 401 });
+		}
+
+		if (url.pathname === "/run" && request.method === "POST") {
+			const body = (await request.json().catch(() => ({}))) as RunRequest;
+			try {
+				return Response.json(await runner(env).start({ ...body, source: "http" }));
+			} catch (e) {
+				return Response.json({ error: e instanceof Error ? e.message : String(e) }, { status: 400 });
+			}
+		}
+		if (url.pathname === "/status" && request.method === "GET") {
+			return Response.json(await runner(env).status());
+		}
+		return new Response("Not found", { status: 404 });
+	},
+
+	async scheduled(_controller: ScheduledController, env: Env, ctx: ExecutionContext): Promise<void> {
+		ctx.waitUntil(runner(env).start({ source: "cron" }));
+	},
+} satisfies ExportedHandler<Env>;
