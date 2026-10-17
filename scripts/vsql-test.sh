@@ -68,8 +68,10 @@ mkdir -p "$LOG_DIR" "$WORKDIR"
 LOG_DIR=$(realpath "$LOG_DIR")
 
 log "Fetching installer from $INSTALLER_URL"
+_T=$(date +%s)
 INSTALLER="$WORKDIR/install.sh"
-curl -fsSL "$INSTALLER_URL" -o "$INSTALLER" || die "Could not download the installer."
+curl -fsSL "$INSTALLER_URL" -o "$INSTALLER" || { stage_post "-" download 1 $(( $(date +%s) - _T )); die "Could not download the installer."; }
+DL_ELAPSED=$(( $(date +%s) - _T ))
 INSTALLER_SHA=$(sha256sum "$INSTALLER" | cut -c1-12)
 SQL_SHA=$(sha256sum "$SQL_FILE" | cut -c1-12)
 cp "$INSTALLER" "$LOG_DIR/install.sh"
@@ -87,6 +89,44 @@ if [ -n "${SLACK_FROM_PARENT:-}" ]; then slack() { :; }; fi
 
 # Remove a secret from a log file in place.
 redact() { [ -n "$2" ] && [ -f "$1" ] && sed -i "s/$2/[REDACTED]/g" "$1"; return 0; }
+
+
+# ---- Stage-level Slack debugging (always non-fatal, secrets stripped) ----
+dslack() {
+  [ -n "${SLACK_BOT_TOKEN:-}" ] || return 0
+  SLACK_PREFIX="$(slack_prefix 2>/dev/null)" "$(dirname "$0")/slack-post" "$*" >/dev/null 2>&1 || true
+}
+scrub() {
+  sed -E -e 's/xox[a-z]-[A-Za-z0-9-]+/[REDACTED]/g' \
+         -e 's/(ghp|gho|ghs|ghu|github_pat)_[A-Za-z0-9_]+/[REDACTED]/g' \
+         -e 's/([Pp]assword:? *)[^ ]+/\1[REDACTED]/g' \
+         -e 's/(Bearer|RUN_KEY|TOKEN|SECRET)[=: ]+[^ ]+/\1=[REDACTED]/g' \
+    ${PASSWORD:+-e "s/$PASSWORD/[REDACTED]/g"} 2>/dev/null | cut -c1-300
+}
+# stage_post <codebase> <stage> <exit-code> <elapsed-s> [logfile]
+stage_post() {
+  local cb="$1" st="$2" rc="$3" el="$4" lf="${5:-}" icon=":white_check_mark:" tailtxt=""
+  [ "$rc" -eq 0 ] || icon=":x:"
+  if [ -n "$lf" ] && [ -f "$lf" ] && { [ "$rc" -ne 0 ] || [ "${VSQL_STAGE_TAILS:-0}" = 1 ]; }; then
+    tailtxt=$'\n```\n'"$(tail -15 "$lf" | scrub)"$'\n```'
+  fi
+  dslack "$icon $cb stage=$st rc=$rc elapsed=${el}s$tailtxt"
+}
+env_post() {
+  local info
+  info=$({
+    echo "uname: $(uname -srm)"; echo "user: $(id -un) uid=$(id -u)"
+    echo "glibc: $(ldd --version 2>&1 | head -1)"
+    echo "--- free -m"; free -m 2>&1
+    echo "--- df -h /tmp /workspace"; df -h /tmp /workspace 2>&1
+    echo "--- cgroup mem: $(cat /sys/fs/cgroup/memory.max 2>/dev/null) cpus: $(nproc 2>/dev/null)"
+    echo "mysqld on PATH: $(command -v mysqld || echo none)"
+    echo "libaio: $(ldconfig -p 2>/dev/null | grep -c 'libaio') libnuma: $(ldconfig -p 2>/dev/null | grep -c 'libnuma')"
+  } 2>&1 | scrub)
+  dslack ":mag: vsql environment"$'\n```\n'"$info"$'\n```'
+}
+
+env_post
 
 RESULTS='[]'
 OVERALL=0
@@ -106,20 +146,23 @@ for CODEBASE in "${CODEBASES[@]}"; do
   mkdir -p "$VBASE" "$VLOG"
   [ "${VSQL_TELEMETRY:-0}" = "1" ] || : > "$VBASE/.install_id"
 
+  _S=$(date +%s)
   if HOME="$VHOME" PORT="$PORT" VSQL_CODEBASE="$CODEBASE" \
        INSTALL_METHOD=prebuilt VSQL_VERSION=stable \
        bash "$INSTALLER" </dev/null > "$VLOG/install.log" 2>&1; then
     PASSWORD=$(awk -F': *' '/^Root Password:/ {print $2; exit}' "$VBASE/credentials.txt")
+    stage_post "$CODEBASE" install 0 $(( $(date +%s) - _S )) "$VLOG/install.log"
     RELEASE=$(awk -F': *' '/^Version:/ {print $2; exit}' "$VBASE/credentials.txt")
     BIN="$VBASE/prebuilt/bin"
     SOCKET="$VBASE/mysql.sock"
     MYSQL=("$BIN/mysql" --no-defaults --socket="$SOCKET" -uroot)
     export MYSQL_PWD="$PASSWORD"
 
-    STAGE="connect"
+    STAGE="connect"; _S=$(date +%s)
     if VERSION=$("${MYSQL[@]}" -NBe 'SELECT VERSION()' 2>>"$VLOG/sql-output.log"); then
       log "Server up: $VERSION ($RELEASE)"
-      STAGE="sql"
+      stage_post "$CODEBASE" start/connect 0 $(( $(date +%s) - _S ))
+      STAGE="sql"; _S=$(date +%s)
       "${MYSQL[@]}" -e "CREATE DATABASE IF NOT EXISTS \`$DATABASE\`"
       FORCE_OPT=()
       [ "${VSQL_FORCE:-0}" = "1" ] && FORCE_OPT=(--force)
@@ -127,14 +170,23 @@ for CODEBASE in "${CODEBASES[@]}"; do
         --database="$DATABASE" < "$SQL_FILE" >> "$VLOG/sql-output.log" 2>&1
       SQL_RC=$?
       ERRORS=$(grep -c '^ERROR ' "$VLOG/sql-output.log" || true)
+      stage_post "$CODEBASE" sql "$([ "$SQL_RC" -eq 0 ] && [ "$ERRORS" -eq 0 ] && echo 0 || echo "${SQL_RC:-1}")" $(( $(date +%s) - _S )) "$VLOG/sql-output.log"
       if [ "$SQL_RC" -eq 0 ] && [ "$ERRORS" -eq 0 ]; then
         STATUS="PASS"; STAGE="done"
       fi
+    else
+      stage_post "$CODEBASE" start/connect 1 $(( $(date +%s) - _S )) "$VLOG/sql-output.log"
+      [ -f "$VBASE/mysql.log" ] && stage_post "$CODEBASE" mysqld-log 1 0 "$VBASE/mysql.log"
     fi
+    _S=$(date +%s)
 
-    "$BIN/mysqladmin" --no-defaults --socket="$SOCKET" -uroot shutdown >/dev/null 2>&1 || true
+    "$BIN/mysqladmin" --no-defaults --socket="$SOCKET" -uroot shutdown >"$VLOG/shutdown.log" 2>&1; _RC=$?
+    stage_post "$CODEBASE" shutdown "$_RC" $(( $(date +%s) - _S )) "$VLOG/shutdown.log"
     unset MYSQL_PWD
   else
+    _RC=$?
+    stage_post "$CODEBASE" install 1 $(( $(date +%s) - _S )) "$VLOG/install.log"
+    [ -f "$VBASE/mysql.log" ] && stage_post "$CODEBASE" mysqld-log 1 0 "$VBASE/mysql.log"
     log "Installer failed; last lines:"
     tail -15 "$VLOG/install.log" | sed 's/^/    /'
   fi
