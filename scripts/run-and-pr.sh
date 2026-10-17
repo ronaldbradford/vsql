@@ -16,7 +16,10 @@
 #   BASE_BRANCH     Branch the PR targets (default: main)
 #   AUTO_MERGE=1    Squash-merge the PR straight away (logs are append-only)
 #   DRY_RUN=1       Run the tests and commit locally, but do not push or open a PR
-#   RUN_SOURCE      Free text recorded in the PR body (e.g. "cloudflare cron")
+#   RUN_SOURCE      Where this runs, e.g. "cloudflare cron", "digitalocean",
+#                   "macbook" (default: manual). Recorded in the PR body and
+#                   build log, and prefixed to every Slack message with the host.
+#   RUN_HOST        Host name shown in Slack messages (default: short hostname)
 #   SLACK_BOT_TOKEN Optional; with SLACK_CHANNEL enables progress posts via
 #                   scripts/slack-post (always non-fatal; token is never printed)
 #   SLACK_CHANNEL   Optional Slack channel ID
@@ -29,8 +32,9 @@ set -uo pipefail
 log() { printf '[%s] %s\n' "$(date -u +%H:%M:%S)" "$*"; }
 die() { printf '[%s] ERROR: %s\n' "$(date -u +%H:%M:%S)" "$*" >&2; slack ":x: vsql run aborted: $*"; exit 2; }
 
-# Non-fatal Slack progress message (no-op without SLACK_BOT_TOKEN).
-slack() { [ -n "${SLACK_BOT_TOKEN:-}" ] && [ -x ./scripts/slack-post ] && ./scripts/slack-post "$*" >/dev/null 2>&1; return 0; }
+# Non-fatal Slack progress messages, prefixed with [RUN_SOURCE · host].
+# shellcheck source=scripts/slack-lib.sh
+. "$(dirname "$0")/slack-lib.sh"
 export SLACK_FROM_PARENT=1   # vsql-test.sh skips its own per-codebase posts
 
 REPO_ROOT=$(git rev-parse --show-toplevel 2>/dev/null) || die "Run this from inside the vsql repo."
@@ -57,7 +61,7 @@ git checkout --quiet -B "$BRANCH" "origin/$BASE_BRANCH" 2>/dev/null \
   || git checkout --quiet -B "$BRANCH"
 
 log "Running tests; logs go to $LOG_DIR"
-slack ":rocket: vsql test run started: sql=$SQL_FILE codebases=${*:-mysql-8.4 percona-8.4 mysql-9.7} source=${RUN_SOURCE:-manual} host=$(hostname 2>/dev/null || uname -n)"
+slack ":rocket: vsql test run started: sql=$SQL_FILE codebases=${*:-mysql-8.4 percona-8.4 mysql-9.7}"
 RUN_START=$(date +%s)
 # Each codebase is wrapped in build-log (best effort; never changes the result).
 run_all() {

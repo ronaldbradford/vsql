@@ -1,0 +1,28 @@
+#!/usr/bin/env bash
+#
+# slack-test: post sample vsql messages to Slack without running any tests,
+# to check the token, channel and the [RUN_SOURCE · host] prefix.
+#
+# Usage: [RUN_SOURCE=macbook] [RUN_HOST=name] ./scripts/slack-test
+#        SLACK_DRY_RUN=1 ./scripts/slack-test     # print instead of posting
+#
+# Env: SLACK_BOT_TOKEN, SLACK_CHANNEL, RUN_SOURCE (default: manual), RUN_HOST
+
+set -uo pipefail
+# shellcheck source=scripts/slack-lib.sh
+. "$(dirname "$0")/slack-lib.sh"
+
+if [ -z "${SLACK_BOT_TOKEN:-}" ] && [ "${SLACK_DRY_RUN:-0}" != 1 ]; then
+  echo "slack-test: set SLACK_BOT_TOKEN (and SLACK_CHANNEL), or SLACK_DRY_RUN=1 to print only" >&2
+  exit 1
+fi
+[ -n "${SLACK_CHANNEL:-}" ] || { echo "slack-test: set SLACK_CHANNEL" >&2; exit 1; }
+export SLACK_STRICT=1   # show Slack errors instead of swallowing them
+
+T=":test_tube: test message, no tests were run"
+slack ":test_tube: Slack test: the next messages are samples, no tests were run"
+slack ":rocket: vsql test run started: sql=sql/smoke.sql codebases=mysql-8.4 percona-8.4 mysql-9.7 ($T)"
+slack ":white_check_mark: mysql-8.4 PASS (0s) ($T)"
+slack ":white_check_mark: vsql run PASS in 0s (smoke.sql). PR: none ($T)"
+[ "${SLACK_DRY_RUN:-0}" = 1 ] && verb="Printed" || verb="Posted"
+echo "$verb test messages as $(slack_prefix) for $SLACK_CHANNEL" >&2

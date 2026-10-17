@@ -81,10 +81,9 @@ cp "$SQL_FILE" "$LOG_DIR/test.sql"
 log "Installer sha256 $INSTALLER_SHA, SQL script sha256 $SQL_SHA"
 
 # Optional, non-fatal Slack post; skipped when run-and-pr.sh already reports.
-slack() {
-  [ -z "${SLACK_FROM_PARENT:-}" ] && [ -n "${SLACK_BOT_TOKEN:-}" ] || return 0
-  "$(dirname "$0")/slack-post" "$*" >/dev/null 2>&1 || true
-}
+# shellcheck source=scripts/slack-lib.sh
+. "$(dirname "$0")/slack-lib.sh"
+if [ -n "${SLACK_FROM_PARENT:-}" ]; then slack() { :; }; fi
 
 # Remove a secret from a log file in place.
 redact() { [ -n "$2" ] && [ -f "$1" ] && sed -i "s/$2/[REDACTED]/g" "$1"; return 0; }

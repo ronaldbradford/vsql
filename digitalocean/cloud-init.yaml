@@ -1,0 +1,52 @@
+#cloud-config
+# Dependencies for running scripts/run-and-pr.sh on a throwaway DigitalOcean
+# droplet. No secrets live here: user-data is readable from the droplet's
+# metadata service and the DO control panel, so do-run.sh passes tokens over
+# SSH instead.
+#
+# Image must be Ubuntu 26.04 (ubuntu-26-04-x64) or newer: the 0.0.7 prebuilt
+# clients (mysql, mysqladmin) need glibc >= 2.42. On 24.04 (glibc 2.39) the
+# server starts but the installer's mysqladmin ping fails, so every install
+# is reported as failed.
+
+package_update: true
+package_upgrade: false   # skipped on purpose: the droplet lives a few minutes
+
+packages:
+  # Tooling used by run-and-pr.sh, vsql-test.sh and the installer
+  - bash
+  - ca-certificates
+  - curl
+  - git
+  - gh
+  - jq
+  - tar
+  - gzip
+  - procps
+  - iproute2
+  - lsof
+  - util-linux
+  # Shared libraries the prebuilt binaries link against
+  - libaio1t64
+  - libnuma1
+  - libzstd1
+  - libssl3t64
+  - libncurses6
+  - libtirpc3t64
+  - libcurl4t64     # Percona keyring components
+  - ufw
+
+# The installer refuses to run as root, so tests run as this user
+# (same name as the Cloudflare container).
+users:
+  - default
+  - name: runner
+    shell: /bin/bash
+    lock_passwd: true
+
+runcmd:
+  # Only SSH in from outside; test servers stay on localhost/sockets.
+  - [ufw, allow, OpenSSH]
+  - [ufw, --force, enable]
+
+final_message: "vsql cloud-init finished after $UPTIME seconds"
