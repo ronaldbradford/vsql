@@ -29,15 +29,16 @@ START=$(date +%s)
 "$@"
 RC=$?
 SECS=$(( $(date +%s) - START ))
-if [ "$RC" -eq 0 ]; then STATUS=success; else STATUS=failure; fi
+STATUS=$RC   # endpoint requires a numeric status (exit code)
+
+# JSON-escape a string (backslash, quote, control chars)
+json_escape() { printf '%s' "$1" | sed -e 's/\\/\\\\/g' -e 's/"/\\"/g' | tr '\n\t\r' '   '; }
 
 if command -v curl >/dev/null 2>&1; then
-  curl -fsS -m 10 -X POST "$URL" \
-    --data-urlencode "hostname=$(hostname)" \
-    --data-urlencode "description=$DESC" \
-    --data-urlencode "status=$STATUS" \
-    --data-urlencode "execution_seconds=$SECS" \
-    --data-urlencode "command=$CMD" >/dev/null 2>&1 \
+  BODY=$(printf '{"hostname":"%s","description":"%s","status":%d,"execution_seconds":%d,"command":"%s"}' \
+    "$(json_escape "$(hostname)")" "$(json_escape "$DESC")" "$STATUS" "$SECS" "$(json_escape "$CMD")")
+  curl -fsS -m 10 -X POST "$URL" -H 'Content-Type: application/json' \
+    -d "$BODY" >/dev/null 2>&1 \
     || echo "build-log: warning: could not post to $URL" >&2
 fi
 exit "$RC"
