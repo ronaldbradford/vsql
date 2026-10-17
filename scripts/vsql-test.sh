@@ -73,8 +73,18 @@ curl -fsSL "$INSTALLER_URL" -o "$INSTALLER" || die "Could not download the insta
 INSTALLER_SHA=$(sha256sum "$INSTALLER" | cut -c1-12)
 SQL_SHA=$(sha256sum "$SQL_FILE" | cut -c1-12)
 cp "$INSTALLER" "$LOG_DIR/install.sh"
+# The installer sleeps a fixed 2s after shutting down its temporary server and
+# then restarts it; on slower disks/containers the old server still holds the
+# InnoDB lock. Wait (up to 120s) for the pid file to disappear instead.
+sed -i 's|^\( *\)sleep 2$|\1for _i in $(seq 1 120); do [ -e "${INSTALL_BASE}/mysql.pid" ] \|\| break; sleep 1; done; sleep 1|' "$INSTALLER"
 cp "$SQL_FILE" "$LOG_DIR/test.sql"
 log "Installer sha256 $INSTALLER_SHA, SQL script sha256 $SQL_SHA"
+
+# Optional, non-fatal Slack post; skipped when run-and-pr.sh already reports.
+slack() {
+  [ -z "${SLACK_FROM_PARENT:-}" ] && [ -n "${SLACK_BOT_TOKEN:-}" ] || return 0
+  "$(dirname "$0")/slack-post" "$*" >/dev/null 2>&1 || true
+}
 
 # Remove a secret from a log file in place.
 redact() { [ -n "$2" ] && [ -f "$1" ] && sed -i "s/$2/[REDACTED]/g" "$1"; return 0; }
@@ -136,6 +146,7 @@ for CODEBASE in "${CODEBASES[@]}"; do
   ELAPSED=$(( $(date -u +%s) - STARTED ))
   log "$CODEBASE: $STATUS (stage: $STAGE, SQL errors: $ERRORS, ${ELAPSED}s)"
   [ "$STATUS" = "PASS" ] || OVERALL=1
+  slack "$([ "$STATUS" = PASS ] && echo ':white_check_mark:' || echo ':x:') $CODEBASE $STATUS (stage: $STAGE, ${ELAPSED}s)"
 
   RESULTS=$(jq -c \
     --arg codebase "$CODEBASE" --arg status "$STATUS" --arg stage "$STAGE" \

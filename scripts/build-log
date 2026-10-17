@@ -1,0 +1,43 @@
+#!/bin/sh
+#
+# build-log - run a command and report hostname/description/status/duration to
+# a Build Log endpoint. Reporting is best effort: a failed POST never changes
+# the command's exit status.
+#
+# NOTE: written from the documented interface of
+# ronaldbradford/cloudflare build-log/bin/build-log (source was not accessible);
+# replace with the upstream script if desired.
+#
+# Usage: build-log [-e URL] [-d DESCRIPTION] [--] COMMAND...
+# Env:   BUILD_LOG_URL (default https://build-log.ronaldbradford.workers.dev/)
+
+URL="${BUILD_LOG_URL:-https://build-log.ronaldbradford.workers.dev/}"
+DESC=""
+while [ $# -gt 0 ]; do
+  case "$1" in
+    -e) URL="$2"; shift 2 ;;
+    -d) DESC="$2"; shift 2 ;;
+    --) shift; break ;;
+    -*) echo "build-log: unknown option $1" >&2; exit 2 ;;
+    *) break ;;
+  esac
+done
+[ $# -gt 0 ] || { echo "Usage: build-log [-e URL] [-d DESCRIPTION] [--] COMMAND..." >&2; exit 2; }
+
+CMD="$*"
+START=$(date +%s)
+"$@"
+RC=$?
+SECS=$(( $(date +%s) - START ))
+if [ "$RC" -eq 0 ]; then STATUS=success; else STATUS=failure; fi
+
+if command -v curl >/dev/null 2>&1; then
+  curl -fsS -m 10 -X POST "$URL" \
+    --data-urlencode "hostname=$(hostname)" \
+    --data-urlencode "description=$DESC" \
+    --data-urlencode "status=$STATUS" \
+    --data-urlencode "execution_seconds=$SECS" \
+    --data-urlencode "command=$CMD" >/dev/null 2>&1 \
+    || echo "build-log: warning: could not post to $URL" >&2
+fi
+exit "$RC"

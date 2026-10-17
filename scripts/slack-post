@@ -1,0 +1,31 @@
+#!/bin/sh
+# slack-post: post a message to a Slack channel.
+# Usage: slack-post [-c CHANNEL] [-t THREAD_TS] [--] MESSAGE...
+#        echo "msg" | slack-post [-c CHANNEL]
+# Env:   SLACK_BOT_TOKEN (xoxb-..., needs chat:write), SLACK_CHANNEL (default channel ID/name)
+# Never fails the calling script: errors print a warning and exit 0 unless SLACK_STRICT=1.
+channel="${SLACK_CHANNEL:-}"; thread=""
+while [ $# -gt 0 ]; do
+  case "$1" in
+    -c) channel="$2"; shift 2 ;;
+    -t) thread="$2"; shift 2 ;;
+    --) shift; break ;;
+    *) break ;;
+  esac
+done
+if [ $# -gt 0 ]; then msg="$*"; else msg="$(cat)"; fi
+fail() { echo "slack-post: $1" >&2; [ "${SLACK_STRICT:-0}" = 1 ] && exit 1; exit 0; }
+[ -n "${SLACK_BOT_TOKEN:-}" ] || fail "SLACK_BOT_TOKEN not set"
+[ -n "$channel" ] || fail "no channel (use -c or SLACK_CHANNEL)"
+[ -n "$msg" ] || fail "empty message"
+esc=$(printf '%s' "$msg" | sed -e 's/\\/\\\\/g' -e 's/"/\\"/g' -e 's/\t/\\t/g' | awk 'BEGIN{ORS="\\n"}{print}')
+json="{\"channel\":\"$channel\",\"text\":\"$esc\""
+[ -n "$thread" ] && json="$json,\"thread_ts\":\"$thread\""
+json="$json}"
+resp=$(curl -sS --max-time 15 -X POST https://slack.com/api/chat.postMessage \
+  -H "Authorization: Bearer $SLACK_BOT_TOKEN" \
+  -H "Content-Type: application/json; charset=utf-8" -d "$json") || fail "request failed"
+case "$resp" in
+  *'"ok":true'*) exit 0 ;;
+  *) fail "Slack error: $(printf '%s' "$resp" | sed -n 's/.*"error":"\([^"]*\)".*/\1/p')" ;;
+esac
