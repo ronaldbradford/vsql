@@ -17,7 +17,14 @@
 #   VSQL_WORKDIR       Scratch directory for installs (default: /tmp/vsql)
 #   VSQL_BASE_PORT     First TCP port; each variant gets the next one (default: 13306)
 #   VSQL_DATABASE      Database created and selected before the script (default: vsql_test)
-#   VSQL_FORCE=1       Continue past SQL errors (mysql --force)
+#   VSQL_FORCE=1       Continue past SQL errors (mysql --force). Default 1, so every
+#                      extension section runs; ANY error still fails the variant.
+#                      Set VSQL_FORCE=0 to stop at the first error.
+#   VSQL_EXTRA_VEB     Space-separated .veb files copied into each variant's veb_dir
+#                      before the SQL runs (for non-bundled extensions such as
+#                      vsql_statistics; see scripts/fetch-statistics-veb.sh)
+#   VSQL_REQUIRE_COVERAGE=1  Also FAIL a variant when a bundled .veb has no
+#                      "-- [ext:<name>]" section in the SQL file (default: warn only).
 #   VSQL_INSTALLER_URL Override the installer location (default: install.villagesql.com)
 #   VSQL_TELEMETRY=1   Allow the installer's anonymous install telemetry
 #                      (default: opted out via an empty ~/.villagesql/.install_id)
@@ -26,6 +33,12 @@
 #   - The installer offers prebuilt binaries for the STABLE release only.
 #   - The installer refuses to run as root; run this as a regular user.
 #   - The installer always uses $HOME/.villagesql, so each variant gets its own HOME.
+#
+# Per-extension reporting: SQL files mark each extension section with a
+# "-- [ext:<name>]" comment line. Every "ERROR ... at line N" is attributed to the
+# last marker above line N (errors before the first marker count as "(core)"),
+# the result is listed per extension in the log, summary.md and summary.json, and
+# bundled .veb files (veb_dir) without a section are reported as UNTESTED.
 #
 # Exit status: 0 only if every requested variant installed, started and ran
 # the SQL script without errors.
@@ -128,6 +141,56 @@ env_post() {
 
 env_post
 
+
+# Extension names that have a "-- [ext:<name>]" section in the SQL file, with the
+# line number each section starts at ("<line> <name>").
+SECTIONS=$(awk '/^-- \[ext:[^]]+\]/ { s=$0; sub(/^-- \[ext:/,"",s); sub(/\].*/,"",s); print NR, s }' "$SQL_FILE")
+
+# ext_report <sql-output.log> <veb_dir> <out-file>
+# Writes one "<ext> <PASS|FAIL|UNTESTED> <error-count>" line per extension (and
+# "(core)" for errors outside any section) and prints a human summary.
+ext_report() {
+  local outlog="$1" vebdir="$2" out="$3" bundled
+  bundled=$(ls "$vebdir"/*.veb 2>/dev/null | xargs -r -n1 basename | sed 's/\.veb$//')
+  : > "$out"
+  # "ERROR 1234 (HY000) at line 57: msg" -> attribute by line number
+  { grep -E '^ERROR [0-9]+ .*at line [0-9]+' "$outlog" || true; } | sed -E 's/^ERROR ([0-9]+).*at line ([0-9]+): (.*)$/\2\t\1\t\3/' |
+  awk -F'\t' -v secs="$SECTIONS" '
+    BEGIN { n=split(secs, a, "\n"); for (i=1;i<=n;i++) { split(a[i], b, " "); ln[i]=b[1]; nm[i]=b[2] } }
+    { who="(core)"; for (i=1;i<=n;i++) if (ln[i] <= $1) who=nm[i];
+      printf "%s\t%s\t%s\t%s\n", who, $1, $2, $3 }' > "$out.errors"
+  # untracked errors (no line number, e.g. connection loss)
+  { grep -E '^ERROR ' "$outlog" | grep -vE 'at line [0-9]+' || true; } | sed -E 's/^/(core)\t0\t0\t/' >> "$out.errors"
+  { echo "$SECTIONS" | awk 'NF {print $2}'; echo "(core)"; echo "$bundled"; } | sort -u | sed '/^$/d' |
+  while read -r ext; do
+    local errs tested=0 inveb=0
+    errs=$(awk -F'\t' -v e="$ext" '$1==e' "$out.errors" | wc -l)
+    echo "$SECTIONS" | awk 'NF {print $2}' | grep -qx "$ext" && tested=1
+    echo "$bundled" | grep -qx "$ext" && inveb=1
+    if [ "$ext" = "(core)" ]; then
+      [ "$errs" -eq 0 ] || echo "$ext FAIL $errs" >> "$out"
+      [ "$errs" -eq 0 ] && echo "$ext PASS 0" >> "$out"
+    elif [ "$tested" -eq 0 ]; then echo "$ext UNTESTED 0" >> "$out"
+    elif [ "$errs" -gt 0 ]; then echo "$ext FAIL $errs" >> "$out"
+    else echo "$ext PASS 0" >> "$out"; fi
+    # "(registry)"-style sections are not .veb files, so only flag real mismatches
+    [ "$tested" -eq 1 ] && [ "$inveb" -eq 0 ] && [[ "$ext" != \(* ]] && echo "$ext FAIL 1" >> "$out.notbundled"
+  done
+  sort -u -o "$out" "$out"
+}
+# Pretty-print the report and any error detail to the console/log.
+ext_print() {
+  local out="$1" line ext st n
+  echo "    Per-extension results:"
+  while read -r ext st n; do
+    printf '      %-24s %s%s\n' "$ext" "$st" "$([ "$st" = FAIL ] && echo " ($n error(s))")"
+  done < "$out"
+  if [ -s "$out.errors" ]; then
+    echo "    Errors:"
+    awk -F'\t' '{printf "      [%s] line %s: ERROR %s: %s\n", $1, $2, $3, $4}' "$out.errors"
+  fi
+}
+
 RESULTS='[]'
 OVERALL=0
 INDEX=0
@@ -138,7 +201,7 @@ for CODEBASE in "${CODEBASES[@]}"; do
   VHOME="$WORKDIR/$CODEBASE"
   VBASE="$VHOME/.villagesql"
   VLOG="$LOG_DIR/$CODEBASE"
-  STATUS="FAIL"; STAGE="install"; VERSION=""; RELEASE=""; ERRORS=0; PASSWORD=""
+  STATUS="FAIL"; STAGE="install"; VERSION=""; RELEASE=""; ERRORS=0; PASSWORD=""; EXT_JSON="{}"; UNTESTED=""
   STARTED=$(date -u +%s)
 
   log "=== $CODEBASE (port $PORT) ==="
@@ -158,18 +221,36 @@ for CODEBASE in "${CODEBASES[@]}"; do
     MYSQL=("$BIN/mysql" --no-defaults --socket="$SOCKET" -uroot)
     export MYSQL_PWD="$PASSWORD"
 
+    for _v in ${VSQL_EXTRA_VEB:-}; do
+      [ -f "$_v" ] && cp "$_v" "$BIN/../lib/veb/" && chmod 644 "$BIN/../lib/veb/$(basename "$_v")" \
+        || log "WARNING: VSQL_EXTRA_VEB file not found: $_v"
+    done
+
     STAGE="connect"; _S=$(date +%s)
     if VERSION=$("${MYSQL[@]}" -NBe 'SELECT VERSION()' 2>>"$VLOG/sql-output.log"); then
       log "Server up: $VERSION ($RELEASE)"
       stage_post "$CODEBASE" start/connect 0 $(( $(date +%s) - _S ))
       STAGE="sql"; _S=$(date +%s)
-      "${MYSQL[@]}" -e "CREATE DATABASE IF NOT EXISTS \`$DATABASE\`"
+      DB_RC=0
+      "${MYSQL[@]}" -e "CREATE DATABASE IF NOT EXISTS \`$DATABASE\`" >> "$VLOG/sql-output.log" 2>&1 || DB_RC=$?
       FORCE_OPT=()
-      [ "${VSQL_FORCE:-0}" = "1" ] && FORCE_OPT=(--force)
+      [ "${VSQL_FORCE:-1}" = "1" ] && FORCE_OPT=(--force)
       "${MYSQL[@]}" "${FORCE_OPT[@]}" --table --show-warnings --comments \
         --database="$DATABASE" < "$SQL_FILE" >> "$VLOG/sql-output.log" 2>&1
       SQL_RC=$?
+      [ "$DB_RC" -eq 0 ] || SQL_RC=$DB_RC
       ERRORS=$(grep -c '^ERROR ' "$VLOG/sql-output.log" || true)
+      # Any non-zero mysql exit status is a failure even if no "ERROR" line was seen.
+      [ "$SQL_RC" -eq 0 ] || [ "$ERRORS" -gt 0 ] || ERRORS=1
+      ext_report "$VLOG/sql-output.log" "$BIN/../lib/veb" "$VLOG/extensions.txt"
+      ext_print "$VLOG/extensions.txt" | tee "$VLOG/extensions-report.txt"
+      EXT_JSON=$(awk '{printf "%s%s", (NR>1?"\n":""), $0}' "$VLOG/extensions.txt" | jq -Rn '[inputs|split(" ")|select(length==3)|{(.[0]):.[1]}]|add // {}' 2>/dev/null || echo '{}')
+      UNTESTED=$(awk '$2=="UNTESTED"{print $1}' "$VLOG/extensions.txt" | paste -sd, -)
+      [ -z "$UNTESTED" ] || log "WARNING: bundled extension(s) without a smoke test section: $UNTESTED"
+      if [ "${VSQL_REQUIRE_COVERAGE:-0}" = "1" ] && [ -n "$UNTESTED" ]; then ERRORS=$((ERRORS+1)); fi
+      if [ -s "$VLOG/extensions.txt.notbundled" ]; then
+        log "WARNING: SQL has sections for extensions not in veb_dir: $(awk '{print $1}' "$VLOG/extensions.txt.notbundled" | paste -sd, -)"
+      fi
       stage_post "$CODEBASE" sql "$([ "$SQL_RC" -eq 0 ] && [ "$ERRORS" -eq 0 ] && echo 0 || echo "${SQL_RC:-1}")" $(( $(date +%s) - _S )) "$VLOG/sql-output.log"
       if [ "$SQL_RC" -eq 0 ] && [ "$ERRORS" -eq 0 ]; then
         STATUS="PASS"; STAGE="done"
@@ -203,8 +284,10 @@ for CODEBASE in "${CODEBASES[@]}"; do
     --arg codebase "$CODEBASE" --arg status "$STATUS" --arg stage "$STAGE" \
     --arg version "$VERSION" --arg release "$RELEASE" \
     --argjson errors "$ERRORS" --argjson seconds "$ELAPSED" \
+    --argjson extensions "${EXT_JSON:-{\}}" --arg untested "$UNTESTED" \
     '. + [{codebase: $codebase, status: $status, stage: $stage, version: $version,
-           release: $release, sql_errors: $errors, seconds: $seconds}]' <<<"$RESULTS")
+           release: $release, sql_errors: $errors, seconds: $seconds,
+           extensions: $extensions, untested_extensions: $untested}]' <<<"$RESULTS")
 
   rm -rf "$VHOME"
 done
@@ -222,6 +305,14 @@ jq -n \
   echo "|---|---|---|---|---|---|"
   jq -r '.variants[] | "| \(.codebase) | \(.status) | \(.release) | \(.version) | \(.sql_errors) | \(.seconds) |"' \
     "$LOG_DIR/summary.json"
+  if jq -e '[.variants[].extensions|length]|add>0' "$LOG_DIR/summary.json" >/dev/null 2>&1; then
+    echo
+    echo "Per-extension results (PASS / FAIL / UNTESTED = bundled but no test section):"
+    echo
+    jq -r '[.variants[].codebase] as $cbs | "| Extension | " + ($cbs|join(" | ")) + " |", "|---|" + ($cbs|map("---")|join("|")) + "|",
+      ([.variants[].extensions|keys[]]|unique[]) as $e |
+      "| \($e) | " + ([.variants[]|(.extensions[$e] // "-")]|join(" | ")) + " |"' "$LOG_DIR/summary.json"
+  fi
 } > "$LOG_DIR/summary.md"
 
 echo

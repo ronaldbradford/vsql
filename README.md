@@ -16,7 +16,7 @@ each one, runs a SQL script, and writes logs plus a summary.
 The installer's prebuilt option provides the latest **stable** release only.
 
 ```
-./scripts/vsql-test.sh sql/smoke.sql                       # all three
+./scripts/vsql-test.sh sql/smoke.sql                       # all three (core + one section per bundled extension)
 ./scripts/vsql-test.sh sql/smoke.sql mysql-9.7 percona-8.4 # a subset
 ```
 
@@ -175,3 +175,7 @@ SLACK_BOT_TOKEN=xoxb-… SLACK_CHANNEL=C0CA2TF6W4C RUN_SOURCE=homelab ./scripts/
 SLACK_BOT_TOKEN=xoxb-… ./digitalocean/do-run.sh slack-test   # adds droplet created/destroyed samples; no droplet
 SLACK_DRY_RUN=1 SLACK_CHANNEL=C0CA2TF6W4C ./scripts/slack-test   # print only, no token needed
 ```
+
+## Extension smoke tests
+
+`sql/smoke.sql` tests every extension bundled with VillageSQL and the runner reports PASS/FAIL per extension (and warns about bundled extensions without a test). See [docs/MAINTAINING.md](docs/MAINTAINING.md) for how extensions are discovered, how to add a test, and how to check `vsql_statistics` `.veb` compatibility (`sql/statistics.sql`, `scripts/fetch-statistics-veb.sh`).
