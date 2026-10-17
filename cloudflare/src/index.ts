@@ -11,7 +11,7 @@ const JOB_EXIT = `${WORK}/job.exit`;
 const POLL_MS = 60_000;
 const MAX_RUN_MS = 60 * 60_000;
 
-type RunRequest = { sqlFile?: string; codebases?: string[]; source?: string };
+type RunRequest = { sqlFile?: string; codebases?: string[]; source?: string; dryRun?: boolean; ref?: string };
 
 type RunState = {
 	status: "idle" | "running" | "finished" | "timed-out" | "error";
@@ -41,7 +41,7 @@ export class VsqlRunner extends DurableObject<Env> {
 		if (!this.container.running) {
 			this.container.start({
 				image: this.container.images.vsql,
-				instance: "standard-1",
+				instance: "standard-3",
 				// Needs github.com, api.github.com, install.villagesql.com and the
 				// release download hosts.
 				enableInternet: true,
@@ -89,17 +89,21 @@ export class VsqlRunner extends DurableObject<Env> {
 		if (!SAFE_PATH.test(sqlFile) || sqlFile.includes("..")) {
 			throw new Error(`Invalid sqlFile: ${sqlFile}`);
 		}
+		if (req.ref !== undefined && (!SAFE_PATH.test(req.ref) || req.ref.includes(".."))) {
+			throw new Error(`Invalid ref: ${req.ref}`);
+		}
 		for (const cb of codebases) {
 			if (!CODEBASES.has(cb)) throw new Error(`Unknown codebase: ${cb}`);
 		}
-		const request: RunRequest = { sqlFile, codebases, source: req.source ?? "manual" };
+		const request: RunRequest = { sqlFile, codebases, source: req.source ?? "manual", dryRun: req.dryRun === true, ref: req.ref };
 
 		try {
 			await this.ensureStarted();
 
 			const clone = await this.sh(
 				`rm -rf ${CHECKOUT} ${JOB_LOG} ${JOB_EXIT} && ` +
-					`gh repo clone ${shellQuote(this.env.REPO)} ${CHECKOUT} -- --quiet && ` +
+					`gh repo clone ${shellQuote(this.env.REPO)} ${CHECKOUT} -- --quiet${request.ref ? ` --branch ${shellQuote(request.ref)}` : ""} && ` +
+					`cp -a /opt/local-scripts/. ${CHECKOUT}/scripts/ && ` +
 					`test -f ${CHECKOUT}/${sqlFile}`,
 			);
 			if (clone.exitCode !== 0) {
@@ -113,10 +117,14 @@ export class VsqlRunner extends DurableObject<Env> {
 					shellQuote(`./scripts/run-and-pr.sh ${args} > ${JOB_LOG} 2>&1; echo $? > ${JOB_EXIT}`) +
 					` > /dev/null 2>&1 &`,
 				{
-					BASE_BRANCH: this.env.BASE_BRANCH,
+					BASE_BRANCH: request.ref ?? this.env.BASE_BRANCH,
 					AUTO_MERGE: this.env.AUTO_MERGE,
+					...(request.dryRun ? { DRY_RUN: "1" } : {}),
+					...(this.env.BUILD_LOG_URL ? { BUILD_LOG_URL: this.env.BUILD_LOG_URL } : {}),
+					...(this.env.SLACK_BOT_TOKEN ? { SLACK_BOT_TOKEN: this.env.SLACK_BOT_TOKEN } : {}),
+					...(this.env.SLACK_CHANNEL ? { SLACK_CHANNEL: this.env.SLACK_CHANNEL } : {}),
 					RUN_SOURCE: `cloudflare ${request.source}`,
-				},
+				} as unknown as Record<string, string>,
 			);
 			if (launch.exitCode !== 0) {
 				throw new Error(`Launch failed: ${launch.stderr || launch.stdout}`);
@@ -184,14 +192,15 @@ export class VsqlRunner extends DurableObject<Env> {
 	}
 }
 
-function runner(env: Env) {
-	// cf types a same-Worker binding by name only, so supply the class type here.
-	const ns = env.VSQL_RUNNER as unknown as DurableObjectNamespace<VsqlRunner>;
+function runner(ctx: ExecutionContext) {
+	// Same-Worker Durable Object via ctx.exports (a binding cannot be declared
+	// for a container-backed DO in the same Worker with this config schema).
+	const ns = (ctx as unknown as { exports: { VsqlRunner: DurableObjectNamespace<VsqlRunner> } }).exports.VsqlRunner;
 	return ns.getByName("vsql-test-runner");
 }
 
 export default {
-	async fetch(request: Request, env: Env): Promise<Response> {
+	async fetch(request: Request, env: Env, ctx: ExecutionContext): Promise<Response> {
 		const url = new URL(request.url);
 		if (request.headers.get("authorization") !== `Bearer ${env.RUN_KEY}`) {
 			return new Response("Unauthorized", { status: 401 });
@@ -200,18 +209,18 @@ export default {
 		if (url.pathname === "/run" && request.method === "POST") {
 			const body = (await request.json().catch(() => ({}))) as RunRequest;
 			try {
-				return Response.json(await runner(env).start({ ...body, source: "http" }));
+				return Response.json(await runner(ctx).start({ ...body, source: "http" }));
 			} catch (e) {
 				return Response.json({ error: e instanceof Error ? e.message : String(e) }, { status: 400 });
 			}
 		}
 		if (url.pathname === "/status" && request.method === "GET") {
-			return Response.json(await runner(env).status());
+			return Response.json(await runner(ctx).status());
 		}
 		return new Response("Not found", { status: 404 });
 	},
 
-	async scheduled(_controller: ScheduledController, env: Env, ctx: ExecutionContext): Promise<void> {
-		ctx.waitUntil(runner(env).start({ source: "cron" }));
+	async scheduled(_controller: ScheduledController, _env: Env, ctx: ExecutionContext): Promise<void> {
+		ctx.waitUntil(runner(ctx).start({ source: "cron" }));
 	},
 } satisfies ExportedHandler<Env>;

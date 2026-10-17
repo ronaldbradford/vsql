@@ -22,5 +22,8 @@ RUN useradd --create-home --shell /bin/bash runner \
 # image. Bump the tag when Cloudflare publishes a newer one.
 COPY --from=docker.io/cloudflare/sandbox:1.0.0 /usr/local/bin/sandbox-shim /usr/local/bin/sandbox-shim
 
+# Local (uncommitted) scripts baked in; overlaid onto the clone by the worker.
+COPY --chown=runner:runner local-scripts/ /opt/local-scripts/
+
 WORKDIR /workspace
 CMD ["sleep", "infinity"]
