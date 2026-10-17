@@ -89,3 +89,89 @@ file, codebases, base branch and `AUTO_MERGE`; the cron schedule is under `trigg
 (`30 20 * * *` UTC, which is 06:30 Brisbane).
 
 To add a test, commit a new file under `sql/` and pass it as `sqlFile`.
+
+## Running on DigitalOcean
+
+`digitalocean/do-run.sh` runs the same `scripts/run-and-pr.sh` on a throwaway
+droplet: it creates the droplet, installs dependencies with
+`digitalocean/cloud-init.yaml`, clones this repo as the non-root `runner`
+user, runs the tests, copies the logs back to `digitalocean/results/<droplet>/`,
+and destroys the droplet.
+
+### One-time setup
+
+```
+brew install doctl jq
+doctl auth init
+doctl compute ssh-key import my-laptop --public-key-file ~/.ssh/id_ed25519.pub
+```
+
+### Use
+
+```
+./digitalocean/do-run.sh run                          # all three, sql/smoke.sql
+./digitalocean/do-run.sh run sql/smoke.sql mysql-9.7  # same arguments as run-and-pr.sh
+./digitalocean/do-run.sh run --local                  # test uncommitted scripts/ and sql/
+./digitalocean/do-run.sh run --if-changed             # no droplet if this release already passed
+./digitalocean/do-run.sh run --keep                   # leave it up; then: ssh, down
+./digitalocean/do-run.sh reap 90                      # destroy vsql-test droplets older than 90 min
+```
+
+Without `GH_TOKEN` the run is `DRY_RUN=1` and the logs are only copied back
+locally; with it, run-and-pr.sh pushes the logs and opens a PR as usual.
+
+Reporting matches the Cloudflare runner (see *Slack messages* below). With `SLACK_BOT_TOKEN` set, the
+droplet's lifecycle is posted to `SLACK_CHANNEL` (default `C0CA2TF6W4C`):
+created, destroyed and the approximate cost, plus any aborts and reaps.
+run-and-pr.sh also posts its per-codebase results. `scripts/build-log` records
+the whole droplet run from your machine, and each codebase from the droplet.
+
+Tokens are piped to the droplet over SSH, never placed in user-data, which is
+readable from the droplet's metadata service.
+
+**Image:** the default is `ubuntu-26-04-x64`. The 0.0.7 prebuilt clients
+(`mysql`, `mysqladmin`) need glibc ≥ 2.42. Ubuntu 24.04 has 2.39, so there the
+installer's `mysqladmin ping` fails even though `mysqld` (glibc 2.38) would
+run.
+
+### Cost
+
+Droplets are billed per second (60 s / $0.01 minimum), and a powered-off
+droplet still bills, so the script always *destroys* it: on success, failure
+or Ctrl-C (unless `--keep`). `reap` is the backstop for a killed laptop. A run
+takes a few minutes on `s-2vcpu-4gb`, well under a cent; `down` prints the
+figure. `--if-changed` asks GitHub for the latest release before creating
+anything, so a scheduled run costs nothing on nights without a new release:
+
+```
+17 3 * * *  cd ~/projects/villagesql/vsql && ./digitalocean/do-run.sh run --if-changed
+```
+
+## Slack messages
+
+The same tests can run from Cloudflare, DigitalOcean, or any virtual or
+physical machine, all posting to one channel. Every message starts with
+`[RUN_SOURCE · host]`:
+
+```
+[cloudflare cron · 8f3a…] :rocket: vsql test run started: sql=sql/smoke.sql …
+[digitalocean · vsql-test-20261017t015126z] :droplet: vsql droplet created (s-2vcpu-4gb, syd1, ubuntu-26-04-x64)
+[homelab · nuc01] :white_check_mark: mysql-9.7 PASS (14s)
+```
+
+- `RUN_SOURCE`: the environment. The Cloudflare worker sets
+  `cloudflare cron`/`cloudflare http`, `do-run.sh` defaults to `digitalocean`,
+  and anywhere else defaults to `manual`. Set it to name a machine class, e.g.
+  `RUN_SOURCE=homelab ./scripts/run-and-pr.sh`.
+- `RUN_HOST`: the machine (default: short hostname). DigitalOcean messages use
+  the droplet name.
+
+`RUN_SOURCE` is also recorded in the PR body and the build log.
+
+To check the token, channel and prefix without running any tests:
+
+```
+SLACK_BOT_TOKEN=xoxb-… SLACK_CHANNEL=C0CA2TF6W4C RUN_SOURCE=homelab ./scripts/slack-test
+SLACK_BOT_TOKEN=xoxb-… ./digitalocean/do-run.sh slack-test   # adds droplet created/destroyed samples; no droplet
+SLACK_DRY_RUN=1 SLACK_CHANNEL=C0CA2TF6W4C ./scripts/slack-test   # print only, no token needed
+```

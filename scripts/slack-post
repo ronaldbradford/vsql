@@ -1,20 +1,27 @@
 #!/bin/sh
 # slack-post: post a message to a Slack channel.
-# Usage: slack-post [-c CHANNEL] [-t THREAD_TS] [--] MESSAGE...
+# Usage: slack-post [-c CHANNEL] [-t THREAD_TS] [-p PREFIX] [--] MESSAGE...
 #        echo "msg" | slack-post [-c CHANNEL]
 # Env:   SLACK_BOT_TOKEN (xoxb-..., needs chat:write), SLACK_CHANNEL (default channel ID/name)
+#        SLACK_PREFIX    text put in front of every message (same as -p)
+#        SLACK_DRY_RUN=1 print the message to stderr instead of posting (no token needed)
 # Never fails the calling script: errors print a warning and exit 0 unless SLACK_STRICT=1.
-channel="${SLACK_CHANNEL:-}"; thread=""
+channel="${SLACK_CHANNEL:-}"; thread=""; prefix="${SLACK_PREFIX:-}"
 while [ $# -gt 0 ]; do
   case "$1" in
     -c) channel="$2"; shift 2 ;;
     -t) thread="$2"; shift 2 ;;
+    -p) prefix="$2"; shift 2 ;;
     --) shift; break ;;
     *) break ;;
   esac
 done
 if [ $# -gt 0 ]; then msg="$*"; else msg="$(cat)"; fi
 fail() { echo "slack-post: $1" >&2; [ "${SLACK_STRICT:-0}" = 1 ] && exit 1; exit 0; }
+[ -n "$prefix" ] && [ -n "$msg" ] && msg="$prefix $msg"
+if [ "${SLACK_DRY_RUN:-0}" = 1 ]; then
+  echo "slack-post (dry run) -> ${channel:-<no channel>}: $msg" >&2; exit 0
+fi
 [ -n "${SLACK_BOT_TOKEN:-}" ] || fail "SLACK_BOT_TOKEN not set"
 [ -n "$channel" ] || fail "no channel (use -c or SLACK_CHANNEL)"
 [ -n "$msg" ] || fail "empty message"
