@@ -1,6 +1,6 @@
 # Container image for running VillageSQL prebuilt tests on Cloudflare Containers.
-# Ubuntu 24.04 matches the platform the VillageSQL Linux tarballs are built on.
-FROM ubuntu:24.04
+# Ubuntu 25.10: the VillageSQL tarballs need glibc 2.42 (24.04 has 2.39).
+FROM ubuntu:25.10
 
 ENV DEBIAN_FRONTEND=noninteractive
 
@@ -21,9 +21,6 @@ RUN useradd --create-home --shell /bin/bash runner \
 # Cloudflare Sandbox shim, which lets the Worker exec commands in a custom
 # image. Bump the tag when Cloudflare publishes a newer one.
 COPY --from=docker.io/cloudflare/sandbox:1.0.0 /usr/local/bin/sandbox-shim /usr/local/bin/sandbox-shim
-
-# Local (uncommitted) scripts baked in; overlaid onto the clone by the worker.
-COPY --chown=runner:runner local-scripts/ /opt/local-scripts/
 
 WORKDIR /workspace
 CMD ["sleep", "infinity"]

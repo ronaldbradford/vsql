@@ -46,6 +46,12 @@ export class VsqlRunner extends DurableObject<Env> {
 				// release download hosts.
 				enableInternet: true,
 			});
+			// DIAGNOSTIC: record why the container exits.
+			const st = this.ctx.storage;
+			this.container.monitor().then(
+				() => st.put("containerExit", { at: new Date().toISOString(), ok: true }),
+				(e) => st.put("containerExit", { at: new Date().toISOString(), error: String(e) }),
+			);
 		}
 		// Keep the container alive while the detached job runs.
 		await this.container.setInactivityTimeout(MAX_RUN_MS + 10 * 60_000);
@@ -103,7 +109,6 @@ export class VsqlRunner extends DurableObject<Env> {
 			const clone = await this.sh(
 				`rm -rf ${CHECKOUT} ${JOB_LOG} ${JOB_EXIT} && ` +
 					`gh repo clone ${shellQuote(this.env.REPO)} ${CHECKOUT} -- --quiet${request.ref ? ` --branch ${shellQuote(request.ref)}` : ""} && ` +
-					`cp -a /opt/local-scripts/. ${CHECKOUT}/scripts/ && ` +
 					`test -f ${CHECKOUT}/${sqlFile}`,
 			);
 			if (clone.exitCode !== 0) {
@@ -123,7 +128,7 @@ export class VsqlRunner extends DurableObject<Env> {
 					...(this.env.BUILD_LOG_URL ? { BUILD_LOG_URL: this.env.BUILD_LOG_URL } : {}),
 					...(this.env.SLACK_BOT_TOKEN ? { SLACK_BOT_TOKEN: this.env.SLACK_BOT_TOKEN } : {}),
 					...(this.env.SLACK_CHANNEL ? { SLACK_CHANNEL: this.env.SLACK_CHANNEL } : {}),
-					RUN_SOURCE: `cloudflare ${request.source}`,
+					RUN_SOURCE: `grokbot cloudflare ${request.source}`,
 				} as unknown as Record<string, string>,
 			);
 			if (launch.exitCode !== 0) {
@@ -152,7 +157,8 @@ export class VsqlRunner extends DurableObject<Env> {
 
 		// The container stops if it goes idle; this poll also keeps it active.
 		if (!this.container.running) {
-			await this.finish(state, "error", undefined, "Container stopped before the run finished");
+			const ce = await this.ctx.storage.get("containerExit");
+			await this.finish(state, "error", undefined, "Container stopped before the run finished" + (ce ? ` ${JSON.stringify(ce)}` : ""));
 			return;
 		}
 
