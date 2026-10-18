@@ -1,4 +1,4 @@
-import { bindings, defineConfig, defineContainer, exports } from "cf/config";
+import { bindings, defineConfig, defineContainer, exports, triggers } from "cf/config";
 
 // Ubuntu 24.04 image with the test tooling; see ./Dockerfile.
 // The Durable Object starts it with `this.container.images.vsql`.
@@ -18,7 +18,8 @@ export default defineConfig({
 		observability: {
 			enabled: true,
 		},
-		// Cron disabled for on-demand testing (was daily 30 20 * * *).
+		// Daily at 20:30 UTC (06:30 Brisbane).
+		triggers: [triggers.scheduled({ schedule: "30 20 * * *" })],
 		env: {
 			REPO: bindings.text("ronaldbradford/vsql"),
 			BASE_BRANCH: bindings.text("main"),
