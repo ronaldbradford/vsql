@@ -1,0 +1,28 @@
+2026-10-19T20:30:25.882687Z 0 [System] [MY-015015] [Server] MySQL Server - start.
+2026-10-19T20:30:26.721743Z 0 [System] [MY-010116] [Server] /tmp/vsql/mysql-8.4/.villagesql/prebuilt/bin/mysqld (mysqld 8.4.11-villagesql-0.0.7) starting as process 240
+2026-10-19T20:30:26.769925Z 1 [System] [MY-013576] [InnoDB] InnoDB initialization has started.
+2026-10-19T20:30:27.377186Z 1 [System] [MY-013577] [InnoDB] InnoDB initialization has ended.
+2026-10-19T20:30:27.768051Z 6 [System] [MY-010666] [Server] VillageSQL: 'Validating system schema...'
+2026-10-19T20:30:27.781961Z 6 [System] [MY-010666] [Server] VillageSQL: 'System schema verification completed successfully'
+2026-10-19T20:30:27.945320Z 0 [Warning] [MY-010068] [Server] CA certificate ca.pem is self signed.
+2026-10-19T20:30:27.945372Z 0 [System] [MY-013602] [Server] Channel mysql_main configured to support TLS. Encrypted connections are now supported for this channel.
+2026-10-19T20:30:27.949222Z 0 [Warning] [MY-011810] [Server] Insecure configuration for --pid-file: Location '/tmp' in the path is accessible to all OS users. Consider choosing a different directory.
+2026-10-19T20:30:27.979603Z 0 [System] [MY-010931] [Server] /tmp/vsql/mysql-8.4/.villagesql/prebuilt/bin/mysqld: ready for connections. Version: '8.4.11-villagesql-0.0.7'  socket: '/tmp/vsql/mysql-8.4/.villagesql/mysql.sock'  port: 13306  Source distribution.
+2026-10-19T20:30:27.979604Z 0 [System] [MY-011323] [Server] X Plugin ready for connections. Bind-address: '::' port: 33060, socket: /tmp/mysqlx.sock
+2026-10-19T20:30:28.054431Z 12 [System] [MY-013172] [Server] Received SHUTDOWN from user root. Shutting down mysqld (Version: 8.4.11-villagesql-0.0.7).
+2026-10-19T20:30:29.624118Z 0 [System] [MY-010910] [Server] /tmp/vsql/mysql-8.4/.villagesql/prebuilt/bin/mysqld: Shutdown complete (mysqld 8.4.11-villagesql-0.0.7)  Source distribution.
+2026-10-19T20:30:29.624171Z 0 [System] [MY-015016] [Server] MySQL Server - end.
+2026-10-19T20:30:31.117281Z 0 [System] [MY-015015] [Server] MySQL Server - start.
+2026-10-19T20:30:31.635705Z 0 [System] [MY-010116] [Server] /tmp/vsql/mysql-8.4/.villagesql/prebuilt/bin/mysqld (mysqld 8.4.11-villagesql-0.0.7) starting as process 298
+2026-10-19T20:30:31.667388Z 1 [System] [MY-013576] [InnoDB] InnoDB initialization has started.
+2026-10-19T20:30:32.078728Z 1 [System] [MY-013577] [InnoDB] InnoDB initialization has ended.
+2026-10-19T20:30:32.324994Z 6 [System] [MY-010666] [Server] VillageSQL: 'Validating system schema...'
+2026-10-19T20:30:32.336392Z 6 [System] [MY-010666] [Server] VillageSQL: 'System schema verification completed successfully'
+2026-10-19T20:30:32.444762Z 0 [Warning] [MY-010068] [Server] CA certificate ca.pem is self signed.
+2026-10-19T20:30:32.444823Z 0 [System] [MY-013602] [Server] Channel mysql_main configured to support TLS. Encrypted connections are now supported for this channel.
+2026-10-19T20:30:32.448709Z 0 [Warning] [MY-011810] [Server] Insecure configuration for --pid-file: Location '/tmp' in the path is accessible to all OS users. Consider choosing a different directory.
+2026-10-19T20:30:32.505516Z 0 [System] [MY-011323] [Server] X Plugin ready for connections. Bind-address: '::' port: 33060, socket: /tmp/mysqlx.sock
+2026-10-19T20:30:32.506143Z 0 [System] [MY-010931] [Server] /tmp/vsql/mysql-8.4/.villagesql/prebuilt/bin/mysqld: ready for connections. Version: '8.4.11-villagesql-0.0.7'  socket: '/tmp/vsql/mysql-8.4/.villagesql/mysql.sock'  port: 13306  Source distribution.
+2026-10-19T20:30:33.816033Z 14 [System] [MY-013172] [Server] Received SHUTDOWN from user root. Shutting down mysqld (Version: 8.4.11-villagesql-0.0.7).
+2026-10-19T20:30:35.020030Z 0 [System] [MY-010910] [Server] /tmp/vsql/mysql-8.4/.villagesql/prebuilt/bin/mysqld: Shutdown complete (mysqld 8.4.11-villagesql-0.0.7)  Source distribution.
+2026-10-19T20:30:35.020068Z 0 [System] [MY-015016] [Server] MySQL Server - end.
