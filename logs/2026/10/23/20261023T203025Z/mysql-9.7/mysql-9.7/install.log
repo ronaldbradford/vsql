@@ -1,0 +1,104 @@
+
+              ====                                                                   
+               =========                                                             
+                =============                                                        
+                 =================                                                   
+                  =====================                                              
+                  =====================+*#                                           
+                   ============+++**###%#**                                          
+                     ##**+**########%%%%***                                          
+                    ##############%%%%%#****            =                            
+                     ###########%%%%%%%******         ========                       
+                      ########%%%%%%%%********      ==============                   
+                       ####%%%%%%%%%%#********    =====================              
+                       ##%%%%%%%%%%%%**********    ===####++================         
+                        %%%%%%%%%%%%#**********+      %%%#*######***++++=========    
+                            %%%%%%%%*****+++=======   %%%***##################***+** 
+                                %%%**+++============== %***** #################      
+                                    ###################******                        
+                                      #########%%%%%%%%#==+***                       
+                                       **#%%%%%%%%%%%%%%*====+                       
+                                      ********##%%%%%%%%%+====                       
+                                     ***************##%%%%==                         
+                                   *********************###                          
+                                  *****************##%%%%                            
+                                 **************#%%%%%%%%                             
+                                **********##%%%%%%%%%%                               
+                              *******##%%%%%%%%%%%%%                                 
+                             ***##%%%%%%%%%%%%%%%%                                   
+                            *##%%%%%%                                                
+
+╔══════════════════════════════════════════════════════╗
+║                                                      ║
+║               VillageSQL Installation                ║
+║             MySQL for the Agentic AI Era             ║
+║                                                      ║
+╚══════════════════════════════════════════════════════╝
+
+Server codebase: mysql-9.7 (set via VSQL_CODEBASE)
+
+Fetching latest stable release...
+Latest stable release: 0.0.7
+
+Install method: prebuilt (set via INSTALL_METHOD)
+Version: stable (set via VSQL_VERSION)
+
+Installing prebuilt binary...
+
+Checking if port 13308 is available...
+✓ Port 13308 is available
+
+Installation paths:
+  Install:    /tmp/vsql/mysql-9.7/.villagesql/prebuilt
+  Data:       /tmp/vsql/mysql-9.7/.villagesql/data
+
+Downloading VillageSQL mysql-9.7 0.0.7 (linux-x86_64)...
+Extracting...
+✓ Prebuilt binary ready (mysql-9.7 0.0.7)
+Downloading Extension SDK...
+Extracting Extension SDK...
+✓ Extension SDK ready
+
+Initializing database...
+2026-10-23T20:32:27.755647Z 1 [System] [MY-013577] [InnoDB] InnoDB initialization has ended.
+2026-10-23T20:32:31.334659Z 6 [Warning] [MY-010453] [Server] root@localhost is created with an empty password ! Please consider switching off the --initialize-insecure option.
+2026-10-23T20:32:35.876236Z 6 [System] [MY-010666] [Server] VillageSQL: 'Validating system schema...'
+2026-10-23T20:32:35.894091Z 6 [System] [MY-010666] [Server] VillageSQL: 'System schema verification completed successfully'
+2026-10-23T20:32:38.801743Z 0 [System] [MY-015018] [Server] MySQL Server Initialization - end.
+✓ Database initialized
+Setting up root password...
+Starting server ✓
+
+
+
+╔══════════════════════════════════════════════════════╗
+║                                                      ║
+║            ✓ Installation Complete!                  ║
+║                                                      ║
+╚══════════════════════════════════════════════════════╝
+
+VillageSQL has been installed to: /tmp/vsql/mysql-9.7/.villagesql
+
+Root Password: [REDACTED]
+
+Starting VillageSQL server...
+
+Waiting for the server
+✓ VillageSQL server is running on port 13308
+
+Credentials saved to: /tmp/vsql/mysql-9.7/.villagesql/credentials.txt
+
+╔══════════════════════════════════════════════════════╗
+║                                                      ║
+║                 Ready to Connect!                    ║
+║                                                      ║
+╚══════════════════════════════════════════════════════╝
+
+To connect to VillageSQL, run:
+  /tmp/vsql/mysql-9.7/.villagesql/prebuilt/bin/mysql -u root -p --socket=/tmp/vsql/mysql-9.7/.villagesql/mysql.sock
+
+Root password: [REDACTED]
+
+To stop the server:
+  /tmp/vsql/mysql-9.7/.villagesql/prebuilt/bin/mysqladmin --socket=/tmp/vsql/mysql-9.7/.villagesql/mysql.sock -u root -p shutdown
+
