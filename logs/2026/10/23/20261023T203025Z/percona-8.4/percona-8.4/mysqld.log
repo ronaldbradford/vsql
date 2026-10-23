@@ -1,0 +1,32 @@
+2026-10-23T20:31:49.102342Z 0 [System] [MY-015015] [Server] MySQL Server - start.
+2026-10-23T20:31:49.719222Z 0 [Warning] [MY-010097] [Server] Insecure configuration for --secure-log-path: Current value does not restrict location of generated files. Consider setting it to a valid, non-empty path.
+2026-10-23T20:31:49.719322Z 0 [System] [MY-010116] [Server] /tmp/vsql/percona-8.4/.villagesql/prebuilt/bin/mysqld (mysqld 8.4.11-villagesql-0.0.7) starting as process 820
+2026-10-23T20:31:49.763811Z 1 [System] [MY-013576] [InnoDB] InnoDB initialization has started.
+2026-10-23T20:31:52.110067Z 1 [System] [MY-013577] [InnoDB] InnoDB initialization has ended.
+2026-10-23T20:31:52.867390Z 6 [System] [MY-010666] [Server] VillageSQL: 'Validating system schema...'
+2026-10-23T20:31:52.899637Z 6 [System] [MY-010666] [Server] VillageSQL: 'System schema verification completed successfully'
+2026-10-23T20:31:53.438173Z 0 [Warning] [MY-010068] [Server] CA certificate ca.pem is self signed.
+2026-10-23T20:31:53.438245Z 0 [System] [MY-013602] [Server] Channel mysql_main configured to support TLS. Encrypted connections are now supported for this channel.
+2026-10-23T20:31:53.441794Z 0 [Warning] [MY-011810] [Server] Insecure configuration for --pid-file: Location '/tmp' in the path is accessible to all OS users. Consider choosing a different directory.
+2026-10-23T20:31:53.489969Z 0 [System] [MY-010931] [Server] /tmp/vsql/percona-8.4/.villagesql/prebuilt/bin/mysqld: ready for connections. Version: '8.4.11-villagesql-0.0.7'  socket: '/tmp/vsql/percona-8.4/.villagesql/mysql.sock'  port: 13307  Source distribution.
+2026-10-23T20:31:53.490201Z 0 [System] [MY-011323] [Server] X Plugin ready for connections. Bind-address: '::' port: 33060, socket: /tmp/mysqlx.sock
+2026-10-23T20:31:53.524191Z 10 [Warning] [MY-013360] [Server] Plugin sha256_password reported: ''sha256_password' is deprecated and will be removed in a future release. Please use caching_sha2_password instead'
+2026-10-23T20:31:53.567277Z 12 [System] [MY-013172] [Server] Received SHUTDOWN from user root. Shutting down mysqld (Version: 8.4.11-villagesql-0.0.7).
+2026-10-23T20:31:55.264414Z 0 [System] [MY-010910] [Server] /tmp/vsql/percona-8.4/.villagesql/prebuilt/bin/mysqld: Shutdown complete (mysqld 8.4.11-villagesql-0.0.7)  Source distribution.
+2026-10-23T20:31:55.264504Z 0 [System] [MY-015016] [Server] MySQL Server - end.
+2026-10-23T20:31:56.638942Z 0 [System] [MY-015015] [Server] MySQL Server - start.
+2026-10-23T20:31:57.093992Z 0 [Warning] [MY-010097] [Server] Insecure configuration for --secure-log-path: Current value does not restrict location of generated files. Consider setting it to a valid, non-empty path.
+2026-10-23T20:31:57.094098Z 0 [System] [MY-010116] [Server] /tmp/vsql/percona-8.4/.villagesql/prebuilt/bin/mysqld (mysqld 8.4.11-villagesql-0.0.7) starting as process 878
+2026-10-23T20:31:57.129370Z 1 [System] [MY-013576] [InnoDB] InnoDB initialization has started.
+2026-10-23T20:31:58.332909Z 1 [System] [MY-013577] [InnoDB] InnoDB initialization has ended.
+2026-10-23T20:31:58.850863Z 6 [System] [MY-010666] [Server] VillageSQL: 'Validating system schema...'
+2026-10-23T20:31:58.895660Z 6 [System] [MY-010666] [Server] VillageSQL: 'System schema verification completed successfully'
+2026-10-23T20:31:59.031248Z 0 [Warning] [MY-010068] [Server] CA certificate ca.pem is self signed.
+2026-10-23T20:31:59.031374Z 0 [System] [MY-013602] [Server] Channel mysql_main configured to support TLS. Encrypted connections are now supported for this channel.
+2026-10-23T20:31:59.040010Z 0 [Warning] [MY-011810] [Server] Insecure configuration for --pid-file: Location '/tmp' in the path is accessible to all OS users. Consider choosing a different directory.
+2026-10-23T20:31:59.109382Z 0 [System] [MY-010931] [Server] /tmp/vsql/percona-8.4/.villagesql/prebuilt/bin/mysqld: ready for connections. Version: '8.4.11-villagesql-0.0.7'  socket: '/tmp/vsql/percona-8.4/.villagesql/mysql.sock'  port: 13307  Source distribution.
+2026-10-23T20:31:59.109430Z 0 [System] [MY-011323] [Server] X Plugin ready for connections. Bind-address: '::' port: 33060, socket: /tmp/mysqlx.sock
+2026-10-23T20:31:59.145640Z 10 [Warning] [MY-013360] [Server] Plugin sha256_password reported: ''sha256_password' is deprecated and will be removed in a future release. Please use caching_sha2_password instead'
+2026-10-23T20:32:01.726585Z 14 [System] [MY-013172] [Server] Received SHUTDOWN from user root. Shutting down mysqld (Version: 8.4.11-villagesql-0.0.7).
+2026-10-23T20:32:03.707573Z 0 [System] [MY-010910] [Server] /tmp/vsql/percona-8.4/.villagesql/prebuilt/bin/mysqld: Shutdown complete (mysqld 8.4.11-villagesql-0.0.7)  Source distribution.
+2026-10-23T20:32:03.707640Z 0 [System] [MY-015016] [Server] MySQL Server - end.
