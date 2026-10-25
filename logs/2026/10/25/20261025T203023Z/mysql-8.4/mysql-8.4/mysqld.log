@@ -1,0 +1,29 @@
+2026-10-25T20:30:37.190416Z 0 [System] [MY-015015] [Server] MySQL Server - start.
+2026-10-25T20:30:37.694183Z 0 [System] [MY-010116] [Server] /tmp/vsql/mysql-8.4/.villagesql/prebuilt/bin/mysqld (mysqld 8.4.11-villagesql-0.0.7) starting as process 241
+2026-10-25T20:30:37.721024Z 1 [System] [MY-013576] [InnoDB] InnoDB initialization has started.
+2026-10-25T20:30:38.175190Z 1 [System] [MY-013577] [InnoDB] InnoDB initialization has ended.
+2026-10-25T20:30:38.446752Z 6 [System] [MY-010666] [Server] VillageSQL: 'Validating system schema...'
+2026-10-25T20:30:38.460463Z 6 [System] [MY-010666] [Server] VillageSQL: 'System schema verification completed successfully'
+2026-10-25T20:30:38.603283Z 0 [Warning] [MY-010068] [Server] CA certificate ca.pem is self signed.
+2026-10-25T20:30:38.603316Z 0 [System] [MY-013602] [Server] Channel mysql_main configured to support TLS. Encrypted connections are now supported for this channel.
+2026-10-25T20:30:38.605111Z 0 [Warning] [MY-011810] [Server] Insecure configuration for --pid-file: Location '/tmp' in the path is accessible to all OS users. Consider choosing a different directory.
+2026-10-25T20:30:38.631056Z 0 [System] [MY-011323] [Server] X Plugin ready for connections. Bind-address: '::' port: 33060, socket: /tmp/mysqlx.sock
+2026-10-25T20:30:38.631111Z 0 [System] [MY-010931] [Server] /tmp/vsql/mysql-8.4/.villagesql/prebuilt/bin/mysqld: ready for connections. Version: '8.4.11-villagesql-0.0.7'  socket: '/tmp/vsql/mysql-8.4/.villagesql/mysql.sock'  port: 13306  Source distribution.
+2026-10-25T20:30:38.691843Z 12 [System] [MY-013172] [Server] Received SHUTDOWN from user root. Shutting down mysqld (Version: 8.4.11-villagesql-0.0.7).
+2026-10-25T20:30:40.190751Z 0 [System] [MY-010910] [Server] /tmp/vsql/mysql-8.4/.villagesql/prebuilt/bin/mysqld: Shutdown complete (mysqld 8.4.11-villagesql-0.0.7)  Source distribution.
+2026-10-25T20:30:40.190784Z 0 [System] [MY-015016] [Server] MySQL Server - end.
+2026-10-25T20:30:41.724673Z 0 [System] [MY-015015] [Server] MySQL Server - start.
+2026-10-25T20:30:42.043843Z 0 [System] [MY-010116] [Server] /tmp/vsql/mysql-8.4/.villagesql/prebuilt/bin/mysqld (mysqld 8.4.11-villagesql-0.0.7) starting as process 299
+2026-10-25T20:30:42.064179Z 1 [System] [MY-013576] [InnoDB] InnoDB initialization has started.
+2026-10-25T20:30:42.327842Z 1 [System] [MY-013577] [InnoDB] InnoDB initialization has ended.
+2026-10-25T20:30:42.499617Z 6 [System] [MY-010666] [Server] VillageSQL: 'Validating system schema...'
+2026-10-25T20:30:42.508962Z 6 [System] [MY-010666] [Server] VillageSQL: 'System schema verification completed successfully'
+2026-10-25T20:30:42.610814Z 0 [Warning] [MY-010068] [Server] CA certificate ca.pem is self signed.
+2026-10-25T20:30:42.610847Z 0 [System] [MY-013602] [Server] Channel mysql_main configured to support TLS. Encrypted connections are now supported for this channel.
+2026-10-25T20:30:42.614140Z 0 [Warning] [MY-011810] [Server] Insecure configuration for --pid-file: Location '/tmp' in the path is accessible to all OS users. Consider choosing a different directory.
+2026-10-25T20:30:42.640836Z 0 [System] [MY-011323] [Server] X Plugin ready for connections. Bind-address: '::' port: 33060, socket: /tmp/mysqlx.sock
+2026-10-25T20:30:42.640854Z 0 [System] [MY-010931] [Server] /tmp/vsql/mysql-8.4/.villagesql/prebuilt/bin/mysqld: ready for connections. Version: '8.4.11-villagesql-0.0.7'  socket: '/tmp/vsql/mysql-8.4/.villagesql/mysql.sock'  port: 13306  Source distribution.
+2026-10-25T20:30:42.663532Z 10 [Warning] [MY-013360] [Server] Plugin sha256_password reported: ''sha256_password' is deprecated and will be removed in a future release. Please use caching_sha2_password instead'
+2026-10-25T20:30:43.537372Z 14 [System] [MY-013172] [Server] Received SHUTDOWN from user root. Shutting down mysqld (Version: 8.4.11-villagesql-0.0.7).
+2026-10-25T20:30:45.140642Z 0 [System] [MY-010910] [Server] /tmp/vsql/mysql-8.4/.villagesql/prebuilt/bin/mysqld: Shutdown complete (mysqld 8.4.11-villagesql-0.0.7)  Source distribution.
+2026-10-25T20:30:45.140678Z 0 [System] [MY-015016] [Server] MySQL Server - end.
