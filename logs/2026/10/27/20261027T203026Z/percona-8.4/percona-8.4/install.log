@@ -1,0 +1,104 @@
+
+              ====                                                                   
+               =========                                                             
+                =============                                                        
+                 =================                                                   
+                  =====================                                              
+                  =====================+*#                                           
+                   ============+++**###%#**                                          
+                     ##**+**########%%%%***                                          
+                    ##############%%%%%#****            =                            
+                     ###########%%%%%%%******         ========                       
+                      ########%%%%%%%%********      ==============                   
+                       ####%%%%%%%%%%#********    =====================              
+                       ##%%%%%%%%%%%%**********    ===####++================         
+                        %%%%%%%%%%%%#**********+      %%%#*######***++++=========    
+                            %%%%%%%%*****+++=======   %%%***##################***+** 
+                                %%%**+++============== %***** #################      
+                                    ###################******                        
+                                      #########%%%%%%%%#==+***                       
+                                       **#%%%%%%%%%%%%%%*====+                       
+                                      ********##%%%%%%%%%+====                       
+                                     ***************##%%%%==                         
+                                   *********************###                          
+                                  *****************##%%%%                            
+                                 **************#%%%%%%%%                             
+                                **********##%%%%%%%%%%                               
+                              *******##%%%%%%%%%%%%%                                 
+                             ***##%%%%%%%%%%%%%%%%                                   
+                            *##%%%%%%                                                
+
+╔══════════════════════════════════════════════════════╗
+║                                                      ║
+║               VillageSQL Installation                ║
+║             MySQL for the Agentic AI Era             ║
+║                                                      ║
+╚══════════════════════════════════════════════════════╝
+
+Server codebase: percona-8.4 (set via VSQL_CODEBASE)
+
+Fetching latest stable release...
+Latest stable release: 0.0.7
+
+Install method: prebuilt (set via INSTALL_METHOD)
+Version: stable (set via VSQL_VERSION)
+
+Installing prebuilt binary...
+
+Checking if port 13307 is available...
+✓ Port 13307 is available
+
+Installation paths:
+  Install:    /tmp/vsql/percona-8.4/.villagesql/prebuilt
+  Data:       /tmp/vsql/percona-8.4/.villagesql/data
+
+Downloading VillageSQL percona-8.4 0.0.7 (linux-x86_64)...
+Extracting...
+✓ Prebuilt binary ready (percona-8.4 0.0.7)
+Downloading Extension SDK...
+Extracting Extension SDK...
+✓ Extension SDK ready
+
+Initializing database...
+2026-10-27T20:31:07.740217Z 1 [System] [MY-013577] [InnoDB] InnoDB initialization has ended.
+2026-10-27T20:31:10.047751Z 6 [Warning] [MY-010453] [Server] root@localhost is created with an empty password ! Please consider switching off the --initialize-insecure option.
+2026-10-27T20:31:12.843045Z 6 [System] [MY-010666] [Server] VillageSQL: 'Validating system schema...'
+2026-10-27T20:31:12.863976Z 6 [System] [MY-010666] [Server] VillageSQL: 'System schema verification completed successfully'
+2026-10-27T20:31:14.466141Z 0 [System] [MY-015018] [Server] MySQL Server Initialization - end.
+✓ Database initialized
+Setting up root password...
+Starting server ✓
+
+
+
+╔══════════════════════════════════════════════════════╗
+║                                                      ║
+║            ✓ Installation Complete!                  ║
+║                                                      ║
+╚══════════════════════════════════════════════════════╝
+
+VillageSQL has been installed to: /tmp/vsql/percona-8.4/.villagesql
+
+Root Password: [REDACTED]
+
+Starting VillageSQL server...
+
+Waiting for the server
+✓ VillageSQL server is running on port 13307
+
+Credentials saved to: /tmp/vsql/percona-8.4/.villagesql/credentials.txt
+
+╔══════════════════════════════════════════════════════╗
+║                                                      ║
+║                 Ready to Connect!                    ║
+║                                                      ║
+╚══════════════════════════════════════════════════════╝
+
+To connect to VillageSQL, run:
+  /tmp/vsql/percona-8.4/.villagesql/prebuilt/bin/mysql -u root -p --socket=/tmp/vsql/percona-8.4/.villagesql/mysql.sock
+
+Root password: [REDACTED]
+
+To stop the server:
+  /tmp/vsql/percona-8.4/.villagesql/prebuilt/bin/mysqladmin --socket=/tmp/vsql/percona-8.4/.villagesql/mysql.sock -u root -p shutdown
+
