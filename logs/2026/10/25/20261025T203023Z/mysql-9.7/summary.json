@@ -1,0 +1,37 @@
+{
+  "timestamp": "20261025T203109Z",
+  "host": "Linux 6.18.54-cloudflare-microvm-2026.9.16 x86_64",
+  "installer_sha256": "abc01e044e2b",
+  "sql_sha256": "1fb792403a5c",
+  "sql_file": "smoke.sql",
+  "result": "PASS",
+  "variants": [
+    {
+      "codebase": "mysql-9.7",
+      "status": "PASS",
+      "stage": "done",
+      "version": "9.7.2-villagesql-0.0.7",
+      "release": "stable (0.0.7)",
+      "sql_errors": 0,
+      "seconds": 20,
+      "extensions": {
+        "(core)": "PASS",
+        "(registry)": "PASS",
+        "vsql_ai": "PASS",
+        "vsql_boolean": "PASS",
+        "vsql_complex": "PASS",
+        "vsql_crypto": "PASS",
+        "vsql_cube": "PASS",
+        "vsql_fuzzystrmatch": "PASS",
+        "vsql_http": "PASS",
+        "vsql_network_address": "PASS",
+        "vsql_oauth2": "PASS",
+        "vsql_rest": "PASS",
+        "vsql_simple": "PASS",
+        "vsql_trgm": "PASS",
+        "vsql_uuid": "PASS"
+      },
+      "untested_extensions": ""
+    }
+  ]
+}
