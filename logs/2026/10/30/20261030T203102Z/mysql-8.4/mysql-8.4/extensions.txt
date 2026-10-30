@@ -1,0 +1,15 @@
+(core) PASS 0
+(registry) PASS 0
+vsql_ai PASS 0
+vsql_boolean PASS 0
+vsql_complex PASS 0
+vsql_crypto PASS 0
+vsql_cube PASS 0
+vsql_fuzzystrmatch PASS 0
+vsql_http PASS 0
+vsql_network_address PASS 0
+vsql_oauth2 PASS 0
+vsql_rest PASS 0
+vsql_simple PASS 0
+vsql_trgm PASS 0
+vsql_uuid PASS 0
