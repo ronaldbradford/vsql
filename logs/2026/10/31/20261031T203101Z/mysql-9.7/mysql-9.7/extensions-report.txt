@@ -1,0 +1,16 @@
+    Per-extension results:
+      (core)                   PASS
+      (registry)               PASS
+      vsql_ai                  PASS
+      vsql_boolean             PASS
+      vsql_complex             PASS
+      vsql_crypto              PASS
+      vsql_cube                PASS
+      vsql_fuzzystrmatch       PASS
+      vsql_http                PASS
+      vsql_network_address     PASS
+      vsql_oauth2              PASS
+      vsql_rest                PASS
+      vsql_simple              PASS
+      vsql_trgm                PASS
+      vsql_uuid                PASS
