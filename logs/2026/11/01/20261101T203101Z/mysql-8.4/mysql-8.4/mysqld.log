@@ -1,0 +1,30 @@
+2026-11-01T20:31:17.709213Z 0 [System] [MY-015015] [Server] MySQL Server - start.
+2026-11-01T20:31:18.243676Z 0 [System] [MY-010116] [Server] /tmp/vsql/mysql-8.4/.villagesql/prebuilt/bin/mysqld (mysqld 8.4.11-villagesql-0.0.7) starting as process 241
+2026-11-01T20:31:18.280447Z 1 [System] [MY-013576] [InnoDB] InnoDB initialization has started.
+2026-11-01T20:31:18.946514Z 1 [System] [MY-013577] [InnoDB] InnoDB initialization has ended.
+2026-11-01T20:31:19.360922Z 6 [System] [MY-010666] [Server] VillageSQL: 'Validating system schema...'
+2026-11-01T20:31:19.374609Z 6 [System] [MY-010666] [Server] VillageSQL: 'System schema verification completed successfully'
+2026-11-01T20:31:19.547840Z 0 [Warning] [MY-010068] [Server] CA certificate ca.pem is self signed.
+2026-11-01T20:31:19.547881Z 0 [System] [MY-013602] [Server] Channel mysql_main configured to support TLS. Encrypted connections are now supported for this channel.
+2026-11-01T20:31:19.549774Z 0 [Warning] [MY-011810] [Server] Insecure configuration for --pid-file: Location '/tmp' in the path is accessible to all OS users. Consider choosing a different directory.
+2026-11-01T20:31:19.571344Z 0 [System] [MY-010931] [Server] /tmp/vsql/mysql-8.4/.villagesql/prebuilt/bin/mysqld: ready for connections. Version: '8.4.11-villagesql-0.0.7'  socket: '/tmp/vsql/mysql-8.4/.villagesql/mysql.sock'  port: 13306  Source distribution.
+2026-11-01T20:31:19.571360Z 0 [System] [MY-011323] [Server] X Plugin ready for connections. Bind-address: '::' port: 33060, socket: /tmp/mysqlx.sock
+2026-11-01T20:31:19.596397Z 10 [Warning] [MY-013360] [Server] Plugin sha256_password reported: ''sha256_password' is deprecated and will be removed in a future release. Please use caching_sha2_password instead'
+2026-11-01T20:31:19.638652Z 12 [System] [MY-013172] [Server] Received SHUTDOWN from user root. Shutting down mysqld (Version: 8.4.11-villagesql-0.0.7).
+2026-11-01T20:31:21.194805Z 0 [System] [MY-010910] [Server] /tmp/vsql/mysql-8.4/.villagesql/prebuilt/bin/mysqld: Shutdown complete (mysqld 8.4.11-villagesql-0.0.7)  Source distribution.
+2026-11-01T20:31:21.194847Z 0 [System] [MY-015016] [Server] MySQL Server - end.
+2026-11-01T20:31:22.677151Z 0 [System] [MY-015015] [Server] MySQL Server - start.
+2026-11-01T20:31:23.020970Z 0 [System] [MY-010116] [Server] /tmp/vsql/mysql-8.4/.villagesql/prebuilt/bin/mysqld (mysqld 8.4.11-villagesql-0.0.7) starting as process 299
+2026-11-01T20:31:23.045126Z 1 [System] [MY-013576] [InnoDB] InnoDB initialization has started.
+2026-11-01T20:31:23.344837Z 1 [System] [MY-013577] [InnoDB] InnoDB initialization has ended.
+2026-11-01T20:31:23.603515Z 6 [System] [MY-010666] [Server] VillageSQL: 'Validating system schema...'
+2026-11-01T20:31:23.628447Z 6 [System] [MY-010666] [Server] VillageSQL: 'System schema verification completed successfully'
+2026-11-01T20:31:23.732436Z 0 [Warning] [MY-010068] [Server] CA certificate ca.pem is self signed.
+2026-11-01T20:31:23.732476Z 0 [System] [MY-013602] [Server] Channel mysql_main configured to support TLS. Encrypted connections are now supported for this channel.
+2026-11-01T20:31:23.734398Z 0 [Warning] [MY-011810] [Server] Insecure configuration for --pid-file: Location '/tmp' in the path is accessible to all OS users. Consider choosing a different directory.
+2026-11-01T20:31:23.773032Z 0 [System] [MY-011323] [Server] X Plugin ready for connections. Bind-address: '::' port: 33060, socket: /tmp/mysqlx.sock
+2026-11-01T20:31:23.773104Z 0 [System] [MY-010931] [Server] /tmp/vsql/mysql-8.4/.villagesql/prebuilt/bin/mysqld: ready for connections. Version: '8.4.11-villagesql-0.0.7'  socket: '/tmp/vsql/mysql-8.4/.villagesql/mysql.sock'  port: 13306  Source distribution.
+2026-11-01T20:31:23.797053Z 10 [Warning] [MY-013360] [Server] Plugin sha256_password reported: ''sha256_password' is deprecated and will be removed in a future release. Please use caching_sha2_password instead'
+2026-11-01T20:31:24.856253Z 14 [System] [MY-013172] [Server] Received SHUTDOWN from user root. Shutting down mysqld (Version: 8.4.11-villagesql-0.0.7).
+2026-11-01T20:31:26.170303Z 0 [System] [MY-010910] [Server] /tmp/vsql/mysql-8.4/.villagesql/prebuilt/bin/mysqld: Shutdown complete (mysqld 8.4.11-villagesql-0.0.7)  Source distribution.
+2026-11-01T20:31:26.170362Z 0 [System] [MY-015016] [Server] MySQL Server - end.
