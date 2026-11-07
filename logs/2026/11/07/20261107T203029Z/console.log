@@ -1,0 +1,141 @@
+[20:30:29] Fetching installer from https://install.villagesql.com
+[20:30:30] Installer sha256 e54da23c2014, SQL script sha256 1fb792403a5c
+[20:30:30] === mysql-8.4 (port 13306) ===
+[20:31:09] Server up: 8.4.11-villagesql-0.0.7 (stable (0.0.7))
+    Per-extension results:
+      (core)                   PASS
+      (registry)               PASS
+      vsql_ai                  PASS
+      vsql_boolean             PASS
+      vsql_complex             PASS
+      vsql_crypto              PASS
+      vsql_cube                PASS
+      vsql_fuzzystrmatch       PASS
+      vsql_http                PASS
+      vsql_network_address     PASS
+      vsql_oauth2              PASS
+      vsql_rest                PASS
+      vsql_simple              PASS
+      vsql_trgm                PASS
+      vsql_uuid                PASS
+[20:31:13] mysql-8.4: PASS (stage: done, SQL errors: 0, 43s)
+
+| Codebase | Result | Release | Server version | SQL errors | Seconds |
+|---|---|---|---|---|---|
+| mysql-8.4 | PASS | stable (0.0.7) | 8.4.11-villagesql-0.0.7 | 0 | 43 |
+
+Per-extension results (PASS / FAIL / UNTESTED = bundled but no test section):
+
+| Extension | mysql-8.4 |
+|---|---|
+| (core) | PASS |
+| (registry) | PASS |
+| vsql_ai | PASS |
+| vsql_boolean | PASS |
+| vsql_complex | PASS |
+| vsql_crypto | PASS |
+| vsql_cube | PASS |
+| vsql_fuzzystrmatch | PASS |
+| vsql_http | PASS |
+| vsql_network_address | PASS |
+| vsql_oauth2 | PASS |
+| vsql_rest | PASS |
+| vsql_simple | PASS |
+| vsql_trgm | PASS |
+| vsql_uuid | PASS |
+
+[20:31:14] Logs: /workspace/vsql/logs/2026/11/07/20261107T203029Z/mysql-8.4
+[20:31:15] Fetching installer from https://install.villagesql.com
+[20:31:15] Installer sha256 e54da23c2014, SQL script sha256 1fb792403a5c
+[20:31:15] === percona-8.4 (port 13307) ===
+[20:31:50] Server up: 8.4.11-villagesql-0.0.7 (stable (0.0.7))
+    Per-extension results:
+      (core)                   PASS
+      (registry)               PASS
+      vsql_ai                  PASS
+      vsql_boolean             PASS
+      vsql_complex             PASS
+      vsql_crypto              PASS
+      vsql_cube                PASS
+      vsql_fuzzystrmatch       PASS
+      vsql_http                PASS
+      vsql_network_address     PASS
+      vsql_oauth2              PASS
+      vsql_rest                PASS
+      vsql_simple              PASS
+      vsql_trgm                PASS
+      vsql_uuid                PASS
+[20:31:53] percona-8.4: PASS (stage: done, SQL errors: 0, 38s)
+
+| Codebase | Result | Release | Server version | SQL errors | Seconds |
+|---|---|---|---|---|---|
+| percona-8.4 | PASS | stable (0.0.7) | 8.4.11-villagesql-0.0.7 | 0 | 38 |
+
+Per-extension results (PASS / FAIL / UNTESTED = bundled but no test section):
+
+| Extension | percona-8.4 |
+|---|---|
+| (core) | PASS |
+| (registry) | PASS |
+| vsql_ai | PASS |
+| vsql_boolean | PASS |
+| vsql_complex | PASS |
+| vsql_crypto | PASS |
+| vsql_cube | PASS |
+| vsql_fuzzystrmatch | PASS |
+| vsql_http | PASS |
+| vsql_network_address | PASS |
+| vsql_oauth2 | PASS |
+| vsql_rest | PASS |
+| vsql_simple | PASS |
+| vsql_trgm | PASS |
+| vsql_uuid | PASS |
+
+[20:31:53] Logs: /workspace/vsql/logs/2026/11/07/20261107T203029Z/percona-8.4
+[20:31:54] Fetching installer from https://install.villagesql.com
+[20:31:54] Installer sha256 e54da23c2014, SQL script sha256 1fb792403a5c
+[20:31:55] === mysql-9.7 (port 13308) ===
+[20:32:26] Server up: 9.7.2-villagesql-0.0.7 (stable (0.0.7))
+    Per-extension results:
+      (core)                   PASS
+      (registry)               PASS
+      vsql_ai                  PASS
+      vsql_boolean             PASS
+      vsql_complex             PASS
+      vsql_crypto              PASS
+      vsql_cube                PASS
+      vsql_fuzzystrmatch       PASS
+      vsql_http                PASS
+      vsql_network_address     PASS
+      vsql_oauth2              PASS
+      vsql_rest                PASS
+      vsql_simple              PASS
+      vsql_trgm                PASS
+      vsql_uuid                PASS
+[20:32:30] mysql-9.7: PASS (stage: done, SQL errors: 0, 35s)
+
+| Codebase | Result | Release | Server version | SQL errors | Seconds |
+|---|---|---|---|---|---|
+| mysql-9.7 | PASS | stable (0.0.7) | 9.7.2-villagesql-0.0.7 | 0 | 35 |
+
+Per-extension results (PASS / FAIL / UNTESTED = bundled but no test section):
+
+| Extension | mysql-9.7 |
+|---|---|
+| (core) | PASS |
+| (registry) | PASS |
+| vsql_ai | PASS |
+| vsql_boolean | PASS |
+| vsql_complex | PASS |
+| vsql_crypto | PASS |
+| vsql_cube | PASS |
+| vsql_fuzzystrmatch | PASS |
+| vsql_http | PASS |
+| vsql_network_address | PASS |
+| vsql_oauth2 | PASS |
+| vsql_rest | PASS |
+| vsql_simple | PASS |
+| vsql_trgm | PASS |
+| vsql_uuid | PASS |
+
+[20:32:30] Logs: /workspace/vsql/logs/2026/11/07/20261107T203029Z/mysql-9.7
