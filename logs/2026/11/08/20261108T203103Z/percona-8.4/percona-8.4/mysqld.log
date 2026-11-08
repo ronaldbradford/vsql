@@ -1,0 +1,30 @@
+2026-11-08T20:31:43.863187Z 0 [System] [MY-015015] [Server] MySQL Server - start.
+2026-11-08T20:31:44.184455Z 0 [Warning] [MY-010097] [Server] Insecure configuration for --secure-log-path: Current value does not restrict location of generated files. Consider setting it to a valid, non-empty path.
+2026-11-08T20:31:44.184553Z 0 [System] [MY-010116] [Server] /tmp/vsql/percona-8.4/.villagesql/prebuilt/bin/mysqld (mysqld 8.4.11-villagesql-0.0.7) starting as process 823
+2026-11-08T20:31:44.203986Z 1 [System] [MY-013576] [InnoDB] InnoDB initialization has started.
+2026-11-08T20:31:44.942923Z 1 [System] [MY-013577] [InnoDB] InnoDB initialization has ended.
+2026-11-08T20:31:45.331320Z 6 [System] [MY-010666] [Server] VillageSQL: 'Validating system schema...'
+2026-11-08T20:31:45.343895Z 6 [System] [MY-010666] [Server] VillageSQL: 'System schema verification completed successfully'
+2026-11-08T20:31:45.549094Z 0 [Warning] [MY-010068] [Server] CA certificate ca.pem is self signed.
+2026-11-08T20:31:45.549137Z 0 [System] [MY-013602] [Server] Channel mysql_main configured to support TLS. Encrypted connections are now supported for this channel.
+2026-11-08T20:31:45.551551Z 0 [Warning] [MY-011810] [Server] Insecure configuration for --pid-file: Location '/tmp' in the path is accessible to all OS users. Consider choosing a different directory.
+2026-11-08T20:31:45.582402Z 0 [System] [MY-010931] [Server] /tmp/vsql/percona-8.4/.villagesql/prebuilt/bin/mysqld: ready for connections. Version: '8.4.11-villagesql-0.0.7'  socket: '/tmp/vsql/percona-8.4/.villagesql/mysql.sock'  port: 13307  Source distribution.
+2026-11-08T20:31:45.582653Z 0 [System] [MY-011323] [Server] X Plugin ready for connections. Bind-address: '::' port: 33060, socket: /tmp/mysqlx.sock
+2026-11-08T20:31:45.640233Z 12 [System] [MY-013172] [Server] Received SHUTDOWN from user root. Shutting down mysqld (Version: 8.4.11-villagesql-0.0.7).
+2026-11-08T20:31:47.253805Z 0 [System] [MY-010910] [Server] /tmp/vsql/percona-8.4/.villagesql/prebuilt/bin/mysqld: Shutdown complete (mysqld 8.4.11-villagesql-0.0.7)  Source distribution.
+2026-11-08T20:31:47.253846Z 0 [System] [MY-015016] [Server] MySQL Server - end.
+2026-11-08T20:31:48.674558Z 0 [System] [MY-015015] [Server] MySQL Server - start.
+2026-11-08T20:31:48.993957Z 0 [Warning] [MY-010097] [Server] Insecure configuration for --secure-log-path: Current value does not restrict location of generated files. Consider setting it to a valid, non-empty path.
+2026-11-08T20:31:48.994017Z 0 [System] [MY-010116] [Server] /tmp/vsql/percona-8.4/.villagesql/prebuilt/bin/mysqld (mysqld 8.4.11-villagesql-0.0.7) starting as process 881
+2026-11-08T20:31:49.014582Z 1 [System] [MY-013576] [InnoDB] InnoDB initialization has started.
+2026-11-08T20:31:49.339739Z 1 [System] [MY-013577] [InnoDB] InnoDB initialization has ended.
+2026-11-08T20:31:49.562015Z 6 [System] [MY-010666] [Server] VillageSQL: 'Validating system schema...'
+2026-11-08T20:31:49.572694Z 6 [System] [MY-010666] [Server] VillageSQL: 'System schema verification completed successfully'
+2026-11-08T20:31:49.670839Z 0 [Warning] [MY-010068] [Server] CA certificate ca.pem is self signed.
+2026-11-08T20:31:49.670875Z 0 [System] [MY-013602] [Server] Channel mysql_main configured to support TLS. Encrypted connections are now supported for this channel.
+2026-11-08T20:31:49.672391Z 0 [Warning] [MY-011810] [Server] Insecure configuration for --pid-file: Location '/tmp' in the path is accessible to all OS users. Consider choosing a different directory.
+2026-11-08T20:31:49.694378Z 0 [System] [MY-010931] [Server] /tmp/vsql/percona-8.4/.villagesql/prebuilt/bin/mysqld: ready for connections. Version: '8.4.11-villagesql-0.0.7'  socket: '/tmp/vsql/percona-8.4/.villagesql/mysql.sock'  port: 13307  Source distribution.
+2026-11-08T20:31:49.695050Z 0 [System] [MY-011323] [Server] X Plugin ready for connections. Bind-address: '::' port: 33060, socket: /tmp/mysqlx.sock
+2026-11-08T20:31:50.767620Z 14 [System] [MY-013172] [Server] Received SHUTDOWN from user root. Shutting down mysqld (Version: 8.4.11-villagesql-0.0.7).
+2026-11-08T20:31:52.169775Z 0 [System] [MY-010910] [Server] /tmp/vsql/percona-8.4/.villagesql/prebuilt/bin/mysqld: Shutdown complete (mysqld 8.4.11-villagesql-0.0.7)  Source distribution.
+2026-11-08T20:31:52.169838Z 0 [System] [MY-015016] [Server] MySQL Server - end.
